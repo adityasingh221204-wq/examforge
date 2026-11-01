@@ -1,0 +1,43 @@
+{
+  "name": "examforge",
+  "private": false,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
+  },
+  "description": "Examination preparation system built from four official university syllabi: 172 topics, 688 rubric-scored questions, 27 numerical solvers, adaptive planner, spaced repetition and 120-minute mock exams.",
+  "license": "MIT",
+  "homepage": "https://site-4614cef64bc247a99ee04f648244e176.freebuff.page",
+  "keywords": [
+    "react",
+    "typescript",
+    "vite",
+    "education",
+    "spaced-repetition",
+    "examination",
+    "study-planner",
+    "mock-exams",
+    "syllabus-tracking"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
