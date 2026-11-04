@@ -39,5 +39,10 @@
   ],
   "engines": {
     "node": ">=20"
+  },
+  "author": {
+    "name": "Aditya Singh",
+    "email": "adityasingh221204@gmail.com",
+    "url": "https://github.com/adityasingh221204-wq"
   }
 }
