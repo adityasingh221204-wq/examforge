@@ -49,5 +49,7 @@ No environment variables or external services are needed.
 
 - TypeScript strict, no `any` unless a library forces it.
 - Engines are pure functions over `AppState`; pages never mutate state directly, they call `set()`.
+- Material ingest follows the same split: `analyseMaterial()` is pure and testable, `addMaterial()` is the
+  only writer, and the review screen is UI state that never reaches the store before confirmation.
 - Styling uses the existing design tokens in `src/styles.css` — charcoal, warm off-white, lavender,
   emerald. Match the neumorphic surfaces rather than introducing a second visual language.

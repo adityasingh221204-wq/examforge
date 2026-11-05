@@ -42,9 +42,12 @@ src/
 │   ├── scheduler.ts      timetable generation, reorganisation, queries
 │   ├── revision.ts       spaced repetition stages, grading, question selection
 │   ├── scoring.ts        objective grading, rubric evaluator, mock assembly
-│   └── analytics.ts      streaks, accuracy series, heatmap, mock reports
+│   ├── analytics.ts      streaks, accuracy series, heatmap, mock reports
+│   ├── ingest.ts         material analysis: sectioning, classification, topic matching,
+│   │                     summarising, de-duplication, commit/remove helpers
+│   └── extract.ts        browser file reading: pdf.js text layer, text/HTML/JSON, limits
 ├── state/store.tsx       StoreProvider / useStore — one AppState, persisted
-├── pages/                Dashboard, Subjects, Tracker, Planner, Learn, Bank, Lab,
+├── pages/                Dashboard, Ingest, Subjects, Tracker, Planner, Learn, Bank, Lab,
 │                         Practice, Mocks, Revision, Analytics, Settings
 ├── components/           ui.tsx, charts.tsx, diagram.tsx, QuestionView.tsx
 ├── styles.css            design system
@@ -59,7 +62,10 @@ Subject ── Unit ── Topic ── subtopics[]
                      │
                      ├── TopicContent (5 levels + diagram/comparison/formulas)
                      ├── Question[] (4 per topic, each with rubric)
-                     └── TopicProgress (status, studyMinutes, assessments[])
+                     ├── TopicProgress (status, studyMinutes, assessments[])
+                     └── MaterialAttachment[] (imported blocks filed under the topic)
+
+MaterialSource ── 1:N ── MaterialAttachment   (one row per imported file or paste)
 ```
 
 - `Topic.id` is stable and structured (`dl-u2-t5`), so engines can derive the subject from the id and the
@@ -93,10 +99,15 @@ interface AppState {
   mocks: MockResult[];
   revisions: RevisionItem[];
   studyLog: DailyStudyLog[];
+  materials: MaterialAttachment[];
+  materialSources: MaterialSource[];
   settings: Settings;
   seeded: boolean;
 }
 ```
+
+`version` is `2`: older saves have no `materials`/`materialSources`, and `loadState` fills them with empty
+arrays, so importing progress from a previous release keeps working.
 
 - `StoreProvider` loads once, seeds a timetable if none exists, and saves debounced on every change.
 - `set(updater)` is the only mutation entry point; pages never touch `localStorage`.
@@ -105,6 +116,19 @@ interface AppState {
 - Export writes the whole `AppState` as JSON; import validates and replaces it.
 
 ## Engines
+
+### Material ingest (`ingest.ts`, `extract.ts`)
+
+A document is cleaned, split into heading/paragraph blocks, classified by wording and scored against every
+syllabus topic: whole-phrase hits on titles and subtopics (weighted by how specific the phrase is) plus
+IDF-weighted term overlap and term coverage, with a subject prior when the user picks one. The raw score is
+mapped to a 0–100 confidence with a margin penalty against the runner-up, so an ambiguous block is offered
+for review instead of being filed silently.
+
+Analysis is a pure function of `(text, options, existing material)`; `addMaterial` is the only writer, and it
+re-checks duplicates against live state. The review screen is a projection of `IngestAnalysis` plus local
+overrides, so nothing reaches the store until the user confirms. Full algorithm, thresholds and extension
+points: [INGEST.md](INGEST.md).
 
 ### Scheduling (`scheduler.ts`)
 

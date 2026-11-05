@@ -7,7 +7,7 @@ as such rather than implied to be tested.
 
 ```bash
 npx tsc --noEmit     # type-check, strict mode            → clean
-npx vitest run       # 42 tests in 2 files                 → 42 passed
+npx vitest run       # 79 tests in 3 files                 → 79 passed
 npm run build        # tsc + vite build                    → dist/ produced
 ```
 
@@ -25,9 +25,26 @@ npm run build        # tsc + vite build                    → dist/ produced
 | Spaced repetition | Immediate review scheduled on creation; stage advances on correct and resets on wrong; a real bank question is offered per item |
 | Evaluation | Objective grading exact; empty/vague answers never get full marks; a complete answer with structure is rewarded |
 
-## Page render tests (`tests/render.test.tsx`, 14 tests)
+## Material ingest (`tests/ingest.test.ts`, 36 tests)
 
-Every one of the 12 pages is server-rendered inside the real store and router, asserting substantial markup
+| Area | Assertion |
+|---|---|
+| Cleaning | Hyphenated line breaks rejoined; page markers dropped; bullets normalised; dashes and whitespace collapsed |
+| Tokenising | Stopwords removed, light stemming (`networks → network`), word count |
+| Sectioning | Markdown, numbered and upper-case headings; headingless document stays one block; oversized bodies chunked with `(2)` suffix; short document title not filed; empty input yields nothing |
+| Classification | Formula, definition, example, procedure, comparison and plain-notes blocks detected from wording |
+| Topic matching | Backpropagation paragraph → *Backpropagation*; congestion paragraph → *TCP Congestion control*; IaaS matched through its parenthetical/acronym; `NAG` does **not** match inside *manages*; subject prior boosts without hiding a better match; unrelated text yields no matches; at most four matches with signals |
+| Subject detection | Each of the four subjects detected from a paragraph of its notes; unrelated text returns `null` instead of guessing |
+| Summaries | Bounded extractive summary; ≤ 8 key terms including the topic vocabulary; empty-ish input still returns text |
+| De-duplication | Jaccard 1 for identical text, 0 for unrelated; stable fingerprints |
+| Analysis | Mixed document: 2 matched, 1 unmatched with a warning; explicit subject honoured; duplicates of existing material flagged and deselected; duplicates inside one document detected; blank input warns |
+| Commit | Attachments filed under the matched topic with unit/subject/summary/key terms; source recorded; re-import skipped; deselected blocks left out; block and source removal |
+| Library | Summary counts and kind histogram; search over title/summary/key terms/source |
+| Migration | A `version: 1` save without `materials` loads as `version: 2` with empty arrays and its progress intact |
+
+## Page render tests (`tests/render.test.tsx`, 15 tests)
+
+Every one of the 13 pages is server-rendered inside the real store and router, asserting substantial markup
 and no `undefined`/`NaN` leaking into the output. Learn is additionally checked for a known topic's content
 (Backpropagation, zero-level sections), and the tracker for its 172-topic table.
 
@@ -45,16 +62,25 @@ Against the production URL, over HTTP:
 
 ## Visual verification
 
-Screenshots in `docs/assets/` were captured from the running build with headless Chromium at 1440×900, plus
-one at 414×896 for the mobile layout. They exercised every major page against a seeded demo profile
-(82 topics covered, 8 mastered, 168 attempts, 3 mock papers, 12 revision items, 88 scheduled sessions);
-the numbers on screen were cross-checked against the engine return values printed during seeding.
+Screenshots in `docs/assets/` were captured from the running build at 1440×900, plus one at 414×896 for the
+mobile layout. They exercised every major page against a seeded demo profile (82 topics covered, 8 mastered,
+168 attempts, 3 mock papers, 12 revision items, 88 scheduled sessions); the numbers on screen were
+cross-checked against the engine return values printed during seeding.
+
+The material ingest flow was additionally driven end-to-end in a cloud Chromium session against the dev
+server: paste a five-section handout → `dl` subject → *Analyse material* → 5 blocks, 4 topics, 3 flagged for
+review, lab logistics correctly unmatched → confirm → `localStorage` held 5 attachments and 1 source → the
+Learn page for `dl-u2-t5` rendered the Backpropagation block with its summary and 87% match, and topic
+status counters were unchanged.
 
 ## Not verified
 
-- **Interactive flows in an automated browser.** Timer countdown, autosave-on-reload, submit confirmation
-  and typed-answer submission were not driven by an automated test. The logic is unit-tested at the engine
-  level and the pages render, but the click-through is a manual check.
+- **Exam interactive flows in an automated browser.** Timer countdown, autosave-on-reload, submit
+  confirmation and typed-answer submission were not driven by an automated test. The logic is unit-tested at
+  the engine level and the pages render, but the click-through is a manual check. (The ingest flow — paste,
+  analyse, review and commit — *was* driven end-to-end; see above.)
+- **PDF extraction.** The pdf.js path is exercised manually; the automated suite covers the analysis
+  pipeline, not the browser PDF parser.
 - **Real exam-device behaviour.** Screen-lock, app switching and low-power modes on a phone are untested.
 - **Print/PDF export.** Not implemented; export is JSON.
 - **Accessibility audit.** Semantic landmarks, labels and focus states exist; no screen-reader pass or

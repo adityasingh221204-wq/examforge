@@ -5,16 +5,17 @@
 **Understand. Apply. Master. Score.**
 
 An examination-preparation system built from four official university syllabi — 172 topics, 688 questions,
-27 numerical solvers, an adaptive study planner, spaced repetition and full mock examinations.
+27 numerical solvers, an adaptive study planner, spaced repetition and full mock examinations. Import your
+own notes, slides or past papers and they are analysed and filed under the matching syllabus topics.
 
 [![Live app](https://img.shields.io/badge/live-app-8b7cf6?style=for-the-badge)](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page)
-[![Tests](https://img.shields.io/badge/tests-42%20passing-10b981?style=flat-square)](#testing)
+[![Tests](https://img.shields.io/badge/tests-79%20passing-10b981?style=flat-square)](#testing)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev/)
 [![Vite 8](https://img.shields.io/badge/Vite-8-646cff?style=flat-square)](https://vite.dev/)
 [![License MIT](https://img.shields.io/badge/license-MIT-a3a3a3?style=flat-square)](LICENSE)
 
-[Live application](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page) · [User guide](docs/GUIDE.md) · [Architecture](docs/ARCHITECTURE.md) · [QA report](docs/QA.md)
+[Live application](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page) · [User guide](docs/GUIDE.md) · [Architecture](docs/ARCHITECTURE.md) · [Material ingest](docs/INGEST.md) · [QA report](docs/QA.md)
 
 </div>
 
@@ -47,6 +48,7 @@ content, question bank and evaluation engines are all deterministic code and aut
 | **Spaced repetition** | 0 / 1 / 3 / 7 / 14 / 30-day stages; a wrong answer demotes and re-explains, a correct one lengthens the interval and raises difficulty. |
 | **Mock examinations** | 120-minute timer, full-screen mode, flagging, autosave, submit confirmation, automatic marking and a detailed per-topic report. |
 | **Analytics** | Coverage, mastery, accuracy, streaks, heatmaps and mock trends — all computed from recorded attempts and study logs. |
+| **Material ingest** | Drop a PDF, Markdown, CSV or pasted chapter: it is split into blocks, matched against all 172 topics with a confidence score, de-duplicated, reviewed by you, then filed under the topic and shown on the Learn page. |
 
 ## Screenshots
 
@@ -66,11 +68,30 @@ content, question bank and evaluation engines are all deterministic code and aut
 | --- | --- |
 | ![Bank](docs/assets/bank.png) | ![Analytics](docs/assets/analytics.png) |
 
+| Add material — drop, paste, choose a subject | Review — topic assignment and confidence, before anything is saved |
+| --- | --- |
+| ![Add material](docs/assets/ingest.png) | ![Material review](docs/assets/ingest-review.png) |
+
 <div align="center">
 <img src="docs/assets/mobile.png" width="320" alt="EXAMFORGE on a phone" />
 </div>
 
 > Screenshots use a demo profile with seeded progress so the charts and queues are populated.
+
+## Adding your own material
+
+Reach **Add material** from the sidebar, the top bar on every page, or the *Your material* card on any topic in
+Learn. Drop files (PDF, `.txt`, `.md`, `.csv`, `.json`, `.html`) or paste text, pick a subject or let it detect
+one, and press **Analyse material**. Nothing is saved yet: every block is shown with its inferred kind
+(definition / formula / example / procedure / comparison / notes), a confidence score, the matched topic and a
+one-click alternative. Fix a topic, untick what you do not want, then confirm.
+
+- Matching is deterministic and local: weighted topic-title and subtopic phrases plus IDF-weighted terms, with
+a subject prior when you pick one. Thresholds and scoring live in
+[`src/engine/ingest.ts`](src/engine/ingest.ts) and are documented in [docs/INGEST.md](docs/INGEST.md).
+- Duplicates are detected against your existing library (fingerprint + Jaccard similarity) and skipped.
+- Importing material never marks a topic `LEARNED` or `MASTERED` — coverage is still not mastery.
+- Everything stays in your browser; PDFs are parsed with pdf.js and never uploaded.
 
 ## Quick start
 
@@ -89,7 +110,7 @@ No environment variables, API keys or services are required.
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npx tsc --noEmit` | Type-check only |
-| `npx vitest run` | Run the 42-test suite |
+| `npx vitest run` | Run the 79-test suite |
 
 ## Data in the repository
 
@@ -102,7 +123,7 @@ No environment variables, API keys or services are required.
 | Questions with rubrics | 688 |
 | Numerical solvers | 27 |
 | Hand-authored diagrams | 54 (+118 derived component flows) |
-| Automated tests | 42 |
+| Automated tests | 79 |
 
 The syllabus is the source of truth. Topic names are never rewritten, merged or invented, and a build-time
 audit (`MISSING_CONTENT`, `ORPHAN_CONTENT`) fails the test suite if the data ever drifts out of sync.
@@ -113,8 +134,9 @@ audit (`MISSING_CONTENT`, `ORPHAN_CONTENT`) fails the test suite if the data eve
 src/
   data/      syllabus database, five-level teaching content, question bank, numerical specs
   engine/    dates, storage, progress, scheduler, revision, scoring, analytics — pure TypeScript
+             ingest (material analysis), extract (PDF/text reading)
   state/     single React context store, auto-persisted
-  pages/     12 pages
+  pages/     13 pages
   components/ ui primitives, SVG charts, diagram renderer, question view
 tests/       engine/data QA suite + page render suite
 worker.js    Cloudflare Worker entrypoint serving the built SPA
@@ -133,11 +155,12 @@ Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 npx vitest run
 ```
 
-42 assertions covering syllabus integrity, content completeness (all five levels present for all 172
+79 assertions covering syllabus integrity, content completeness (all five levels present for all 172
 topics), bank invariants (rubrics sum to marks, MCQ options unique), numerical determinism, planner
 constraints (no sessions on travel days or exam mornings, sleep never violated, sessions inside study
-blocks), mastery gating, spaced-repetition behaviour, evaluator fairness and a render smoke test for all
-twelve pages. See [docs/QA.md](docs/QA.md).
+blocks), mastery gating, spaced-repetition behaviour, evaluator fairness, material ingest (sectioning,
+classification, topic matching, subject detection, de-duplication, state migration) and a render smoke test
+for all thirteen pages. See [docs/QA.md](docs/QA.md).
 
 ## Deployment
 
@@ -154,6 +177,10 @@ Because routing is hash-based, no rewrites are needed:
 - The evaluator scores rubric coverage, length and structure — not prose quality. It rewards the syllabus's
   terminology, and it cannot credit a correct point phrased with none of the rubric's vocabulary.
 - Four questions per topic is enough to practise and to sit mocks, but it is not a past-paper archive.
+- Material matching is lexical, not semantic: it reads headings and vocabulary, so a block that never names
+  its topic or uses different terminology needs a manual assignment. Scanned PDFs need OCR first, and
+  `.docx`/`.pptx` are not parsed — export to PDF or text. See [docs/INGEST.md](docs/INGEST.md) for the exact
+  algorithm and its thresholds.
 - All papers run the real 120-minute clock regardless of paper length.
 
 ## Documentation

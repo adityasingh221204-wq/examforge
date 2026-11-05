@@ -66,13 +66,16 @@ src/
     revision.ts       spaced repetition (stages, grading, question selection)
     scoring.ts        objective grading, rubric evaluator, mock assembly
     analytics.ts      streaks, accuracy series, heatmaps, mock reports
+    ingest.ts         material analysis: sectioning, matching, de-duplication
+    extract.ts        browser file reading (pdf.js, text, HTML, JSON)
   state/store.tsx     React context store: one AppState, auto-persisted
-  pages/              12 pages (Dashboard … Settings)
+  pages/              13 pages (Dashboard, Add Material … Settings)
   components/         ui primitives, SVG charts, diagram renderer, QuestionView
   styles.css          neumorphic design system
 tests/
   qa.test.ts          28 engine/data assertions
-  render.test.tsx     14 page-render smoke tests
+  ingest.test.ts      36 material-ingest assertions
+  render.test.tsx     15 page-render smoke tests
 worker.js             Cloudflare Worker entrypoint (serves dist/)
 deploy.json           deployment manifest
 ```
@@ -211,7 +214,7 @@ imminent one; `missedCount()` drives the reschedule banner.
 
 ---
 
-## 8. The twelve pages
+## 8. The thirteen pages
 
 **1. Dashboard** — exam countdowns, overall coverage vs mastery, today's schedule with complete/skip,
 today's learning objectives drawn from the scheduled topics, the revision queue snapshot, subject
@@ -229,8 +232,9 @@ timetable grouped by date with each session's topics, objectives, questions and 
 explanation of how allocation works, rebalance and regenerate.
 
 **5. Learn** — syllabus browser on the left; on the right the five levels as numbered tabs, learning
-objectives, the diagram or comparison table for Level 3, formula cards, and a level-completion tracker
-that records which of the five levels you have actually covered.
+objectives, the diagram or comparison table for Level 3, formula cards, a level-completion tracker that
+records which of the five levels you have actually covered, and a **Your material** card holding every
+imported block filed under the topic (summary, key terms, full text, remove).
 
 **6. Question Bank** — all 688 questions, filterable by subject, unit, type, marks and difficulty,
 paginated, each expandable to model answer, explanation, common mistakes and rubric. Answering a
@@ -260,6 +264,26 @@ number is computed from attempts, study logs and mock results — no invented st
 
 **12. Settings** — the daily routine (every block editable, study/personal/break), wake and sleep,
 travel window, daily target, mastery pass mark, data counters, export/import, reset.
+
+**13. Add Material** — import and file your own notes (full walkthrough below).
+
+### Adding your own material (page 13)
+
+1. Open **Add Material** — sidebar, the `⇪ Add material` button in the top bar (always visible), or
+   *Add material* on a topic in Learn.
+2. Drop PDFs/text/Markdown/CSV/JSON/HTML, or paste text. Multiple files in one go are fine. Pick the
+   subject if you know it; leave *Auto-detect* otherwise.
+3. Press **Analyse material**. You land on the review screen, nothing has been saved yet.
+4. Each block shows its inferred kind, a confidence score, the matched topic and its key terms. Use the
+   subject filter or *Only needs a look* to work through the uncertain ones; change a topic with the
+   select, accept an alternative match, or untick a block to leave it out. Duplicates are unticked for
+   you and listed at the end.
+5. Press **Add N blocks to study material**. They are now attached to their topics and appear in the
+   **Your material** card on the Learn page.
+6. The same page lists your library: search it, remove a single block, or delete a whole source file.
+
+Importing material never changes a topic's status — reading is coverage, and mastery still requires a
+passed assessment. The algorithm and its thresholds are documented in [INGEST.md](INGEST.md).
 
 ---
 
@@ -383,7 +407,7 @@ Clearing browser site data deletes progress — export first if it matters.
 npm ci                # install (lockfile is authoritative)
 npm run dev           # http://localhost:3000
 npx tsc --noEmit      # typecheck
-npx vitest run        # 42 tests
+npx vitest run        # 79 tests
 npm run build         # production build into dist/
 ```
 
@@ -396,12 +420,14 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 ## 16. Verification record
 
 - `tsc --noEmit` clean.
-- **42/42 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
+- **79/79 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
   with five non-empty levels, zero missing/orphan content, four questions per topic with rubrics
   summing to marks and unique MCQ options, 27 numericals solving deterministically, planner rules
   (no travel days, no exam-morning sessions, sleep boundaries respected, sessions inside study blocks),
   mastery gating, revision stage advance/reset/rotation, evaluator fairness (no full marks for vague
-  answers), advanced mocks restricted to difficulty ≥4, and a render smoke test for all 12 pages.
+  answers), advanced mocks restricted to difficulty ≥4, material ingest (cleaning, sectioning,
+  classification, four-subject matching, subject detection, de-duplication, commit/remove, v1→v2 state
+  migration), and a render smoke test for all 13 pages.
 - Production build succeeds; deployed HTML, JS and CSS verified over HTTP with correct content types,
   and unknown paths fall back to the app shell.
 
@@ -420,6 +446,9 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
   derived from their own technical content. Accurate, but less bespoke.
 - **Timer.** All paper types run the full 120-minute clock, matching the real exam duration rather than
   scaling to paper length.
+- **Material matching is lexical.** It reads headings and vocabulary, so a block that never names its
+  topic, or uses terminology the syllabus does not, needs a manual assignment on the review screen.
+  Scanned PDFs need OCR before import; `.docx`/`.pptx` must be exported to PDF or text.
 - **No browser-based UI test.** Pages are verified by server-rendering and by HTTP against the deployed
   build; interactive behaviour (typing, timer countdown) has not been driven by an automated browser.
 
