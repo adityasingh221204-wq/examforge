@@ -355,6 +355,61 @@ export interface RevisionItem {
   status: 'scheduled' | 'due' | 'graduated';
 }
 
+// ---------------------------------------------------------------- study material (ingest)
+
+/** Shape of a single imported block, inferred from its wording. */
+export type MaterialSectionKind =
+  | 'definition'
+  | 'formula'
+  | 'example'
+  | 'procedure'
+  | 'comparison'
+  | 'notes';
+
+export const MATERIAL_KIND_LABELS: Record<MaterialSectionKind, string> = {
+  definition: 'Definition',
+  formula: 'Formula',
+  example: 'Worked example',
+  procedure: 'Procedure',
+  comparison: 'Comparison',
+  notes: 'Notes',
+};
+
+/** One analysed block of an imported document, filed under a syllabus topic. */
+export interface MaterialAttachment {
+  id: string;
+  sourceId: string;
+  sourceName: string;
+  subjectId: SubjectId;
+  unitId: string;
+  topicId: string;
+  title: string;
+  kind: MaterialSectionKind;
+  body: string;
+  summary: string;
+  keyTerms: string[];
+  /** 0–100 confidence that this block belongs to `topicId`. */
+  confidence: number;
+  /** human-readable reasons for the match, e.g. `phrase "backpropagation"` */
+  signals: string[];
+  addedAt: number;
+  words: number;
+}
+
+/** Provenance record for one imported file or pasted document. */
+export interface MaterialSource {
+  id: string;
+  name: string;
+  mime: string;
+  bytes: number;
+  addedAt: number;
+  /** the subject the user picked, or 'auto' when detection was used */
+  subjectId: SubjectId | 'auto';
+  sections: number;
+  attached: number;
+  words: number;
+}
+
 // ---------------------------------------------------------------- settings & root state
 
 export interface Settings {
@@ -382,6 +437,9 @@ export interface AppState {
   mocks: MockResult[];
   revisions: RevisionItem[];
   studyLog: DailyStudyLog[];
+  /** imported study material, already filed under syllabus topics */
+  materials: MaterialAttachment[];
+  materialSources: MaterialSource[];
   settings: Settings;
   seeded: boolean;
 }

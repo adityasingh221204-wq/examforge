@@ -3,7 +3,8 @@
 import type { AppState, DayBlock, Settings } from '../data/types';
 
 export const STORAGE_KEY = 'examforge.state.v1';
-export const STATE_VERSION = 1;
+/** v2 adds `materials` + `materialSources`; older saves are migrated on load. */
+export const STATE_VERSION = 2;
 
 export const DEFAULT_BLOCKS: DayBlock[] = [
   { id: 'b1', start: '08:30', end: '10:30', label: 'Study Block 1', kind: 'study' },
@@ -33,6 +34,8 @@ export function defaultState(): AppState {
     mocks: [],
     revisions: [],
     studyLog: [],
+    materials: [],
+    materialSources: [],
     settings: { ...DEFAULT_SETTINGS },
     seeded: false,
   };
@@ -48,6 +51,8 @@ export function loadState(): AppState {
       ...base,
       ...parsed,
       settings: { ...base.settings, ...(parsed.settings ?? {}) },
+      materials: Array.isArray(parsed.materials) ? parsed.materials : [],
+      materialSources: Array.isArray(parsed.materialSources) ? parsed.materialSources : [],
       version: STATE_VERSION,
     };
   } catch {
@@ -91,6 +96,8 @@ export function parseImportedState(raw: string): AppState | null {
       ...base,
       ...parsed,
       settings: { ...base.settings, ...(parsed.settings ?? {}) },
+      materials: Array.isArray(parsed.materials) ? parsed.materials : [],
+      materialSources: Array.isArray(parsed.materialSources) ? parsed.materialSources : [],
       version: STATE_VERSION,
     };
   } catch {
