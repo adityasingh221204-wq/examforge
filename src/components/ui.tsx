@@ -1,10 +1,22 @@
 // EXAMFORGE — shared UI primitives.
 
-import { useState, type ReactNode } from 'react';
+import { useState, type CSSProperties, type ReactNode } from 'react';
 import { STATUS_LABELS, type TopicStatus } from '../data/types';
 
-export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <section className={`card ${className}`}>{children}</section>;
+export function Card({
+  children,
+  className = '',
+  style,
+}: {
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  return (
+    <section className={`card ${className}`} style={style}>
+      {children}
+    </section>
+  );
 }
 
 export function CardHead({

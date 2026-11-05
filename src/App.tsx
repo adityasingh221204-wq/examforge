@@ -21,9 +21,11 @@ import { Mocks } from './pages/Mocks';
 import { Revision } from './pages/Revision';
 import { Analytics } from './pages/Analytics';
 import { SettingsPage } from './pages/Settings';
+import { Ingest } from './pages/Ingest';
 
 const NAV = [
   { to: '/', label: 'Dashboard', ico: '◈' },
+  { to: '/ingest', label: 'Add Material', ico: '⇪' },
   { to: '/subjects', label: 'My Subjects', ico: '▤' },
   { to: '/tracker', label: 'Syllabus Tracker', ico: '✓' },
   { to: '/planner', label: 'Study Planner', ico: '▦' },
@@ -74,6 +76,13 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
       <span className="chip" title="Consecutive days with 30+ minutes studied">
         Streak <b>{streak}d</b>
       </span>
+      <button
+        className="btn primary sm"
+        onClick={() => navigate('/ingest')}
+        title="Import notes, PDFs or pasted text and file them under syllabus topics"
+      >
+        ⇪ Add material
+      </button>
       <div className="search" style={{ position: 'relative' }}>
         <span aria-hidden className="muted">⌕</span>
         <input
@@ -181,6 +190,7 @@ function Shell() {
         <TopBar onMenu={() => setNavOpen((v) => !v)} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/ingest" element={<Ingest />} />
           <Route path="/subjects" element={<Subjects />} />
           <Route path="/subjects/:subjectId" element={<Subjects />} />
           <Route path="/tracker" element={<Tracker />} />

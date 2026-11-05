@@ -409,3 +409,57 @@ pre {
   .exam-nav { display: none; }
 }
 .menu-btn { display: none; }
+
+/* ---------------------------------------------------------------- material ingest */
+
+.card.tight { padding: 14px; }
+.card.tight .card-head { margin-bottom: 8px; }
+
+.ingest-grid { grid-template-columns: minmax(0, 1fr) 330px; align-items: start; }
+
+.dropzone {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  text-align: center; padding: 26px 18px; cursor: pointer;
+  border: 1.5px dashed #4a463b; border-radius: var(--radius-sm); background: #201f1b;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.dropzone:hover, .dropzone:focus-visible { border-color: var(--lav-2); background: #232220; outline: none; }
+.dropzone.drag { border-color: var(--em); background: #212824; transform: translateY(-1px); }
+.dropzone-ico { font-size: 24px; color: var(--lav); line-height: 1; }
+
+.file-chip {
+  display: inline-flex; align-items: center; gap: 6px; max-width: 100%;
+  padding: 4px 6px 4px 10px; border-radius: 999px;
+  background: #2a2822; border: 1px solid var(--line); font-size: 11.5px;
+}
+.file-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 220px; }
+.file-chip small { color: var(--ink-3); }
+.file-chip button { background: none; border: 0; color: var(--ink-3); cursor: pointer; padding: 0 2px; }
+.file-chip button:hover { color: var(--danger); }
+
+.confidence {
+  font-size: 10.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+  border: 1px solid; white-space: nowrap;
+}
+.confidence.high { color: var(--em); border-color: #2f4a3f; background: #1f2a24; }
+.confidence.mid { color: var(--warn); border-color: #55402a; background: #2b2419; }
+.confidence.low { color: var(--danger); border-color: #563530; background: #2c2020; }
+
+.mat-row { padding: 10px; border-radius: var(--radius-sm); background: #211f1b; border: 1px solid var(--line); }
+.mat-body {
+  margin: 8px 0 0; padding: 10px; max-height: 260px; overflow: auto;
+  border-radius: 10px; background: #1a1915; border: 1px solid var(--line);
+  font-family: var(--font); font-size: 11.5px; line-height: 1.6; white-space: pre-wrap;
+  color: var(--ink-2);
+}
+
+.sticky-actions {
+  position: sticky; bottom: 0; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; padding: 12px 14px; margin-top: 8px;
+  border-radius: var(--radius); border: 1px solid var(--line);
+  background: rgba(38, 37, 31, 0.94); backdrop-filter: blur(8px);
+}
+
+@media (max-width: 1100px) {
+  .ingest-grid { grid-template-columns: minmax(0, 1fr); }
+}

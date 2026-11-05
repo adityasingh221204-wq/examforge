@@ -8,10 +8,11 @@ import { CONTENT } from '../data/content';
 import { QUESTIONS_BY_TOPIC } from '../data/bank';
 import { getStatus, markLearned, setStatus, logStudy } from '../engine/progress';
 import { ensureRevision } from '../engine/revision';
+import { materialsForTopic, removeMaterial } from '../engine/ingest';
 import { Bar, Card, CardHead, Empty, StatusBadge } from '../components/ui';
 import { Diagram } from '../components/diagram';
 import { QuestionView } from '../components/QuestionView';
-import type { SubjectId } from '../data/types';
+import { MATERIAL_KIND_LABELS, type SubjectId } from '../data/types';
 
 const LEVELS = [
   { id: 1, name: 'Zero level', hint: 'What it is, why it exists, what it solves' },
@@ -48,6 +49,7 @@ export function Learn() {
   const subject = topic ? SUBJECTS.find((s) => s.id === topic.subjectId) : undefined;
   const status = topic ? getStatus(state, topic.id) : 'not_started';
   const questions = QUESTIONS_BY_TOPIC[firstTopic] ?? [];
+  const materials = materialsForTopic(state, firstTopic);
 
   const subjectTopics = ALL_TOPICS.filter((t) => t.subjectId === topic?.subjectId).filter((t) =>
     filter ? t.name.toLowerCase().includes(filter.toLowerCase()) : true,
@@ -171,6 +173,68 @@ export function Learn() {
                 <li key={o} style={{ marginBottom: 3 }}>{o}</li>
               ))}
             </ul>
+          </Card>
+
+          <Card>
+            <CardHead
+              title="Your material"
+              sub={
+                materials.length > 0
+                  ? `${materials.length} imported block${materials.length === 1 ? '' : 's'} filed under this topic`
+                  : 'Import your notes, a PDF or a past paper and it gets filed here'
+              }
+              right={
+                <button className="btn ghost sm" onClick={() => navigate(`/ingest?topic=${topic.id}`)}>
+                  ⇪ Add material
+                </button>
+              }
+            />
+            {materials.length === 0 ? (
+              <Empty>
+                Nothing imported for this topic yet. Anything you add is matched to this topic automatically.
+              </Empty>
+            ) : (
+              <div className="col" style={{ gap: 10 }}>
+                {materials.map((item) => (
+                  <div key={item.id} className="mat-row">
+                    <div className="row between" style={{ gap: 8 }}>
+                      <div className="row" style={{ gap: 6, minWidth: 0 }}>
+                        <span className={`badge ${item.kind === 'formula' ? 'lav' : item.kind === 'definition' ? 'learned' : ''}`}>
+                          {MATERIAL_KIND_LABELS[item.kind]}
+                        </span>
+                        <b className="small" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.title}
+                        </b>
+                      </div>
+                      <div className="row" style={{ gap: 6 }}>
+                        <span className="tiny muted">{item.confidence}% match</span>
+                        <button
+                          className="btn danger sm"
+                          onClick={() => {
+                            set((cur) => removeMaterial(cur, item.id));
+                            notify('Removed from this topic.');
+                          }}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                    <p className="small muted" style={{ marginTop: 4 }}>{item.summary}</p>
+                    <div className="row wrap" style={{ gap: 6, marginTop: 6 }}>
+                      {item.keyTerms.slice(0, 6).map((term) => (
+                        <span key={term} className="chip tiny">{term}</span>
+                      ))}
+                    </div>
+                    <details style={{ marginTop: 6 }}>
+                      <summary className="tiny muted" style={{ cursor: 'pointer' }}>
+                        Read full block · {item.sourceName}
+                      </summary>
+                      <pre className="mat-body">{item.body}</pre>
+                    </details>
+                  </div>
+                ))}
+              </div>
+            )}
           </Card>
 
           <div className="grid split-wide">
