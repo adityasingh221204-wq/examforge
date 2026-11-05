@@ -17,6 +17,7 @@ import { Mocks } from '../src/pages/Mocks';
 import { Revision } from '../src/pages/Revision';
 import { Analytics } from '../src/pages/Analytics';
 import { SettingsPage } from '../src/pages/Settings';
+import { Ingest } from '../src/pages/Ingest';
 
 // minimal localStorage so the store can load and persist in a node environment
 const memory = new Map<string, string>();
@@ -47,6 +48,7 @@ function render(page: ReactElement, route = '/') {
 
 const pages: [string, ReactElement, string][] = [
   ['Dashboard', <Dashboard />, '/'],
+  ['Add Material', <Ingest />, '/ingest'],
   ['Subjects', <Subjects />, '/subjects'],
   ['Syllabus Tracker', <Tracker />, '/tracker'],
   ['Study Planner', <Planner />, '/planner'],
