@@ -14,6 +14,13 @@ import { Diagram } from '../components/diagram';
 import { QuestionView } from '../components/QuestionView';
 import { MATERIAL_KIND_LABELS, type SubjectId } from '../data/types';
 
+const SUBJECT_SHORT: Record<SubjectId, string> = {
+  dl: 'Deep Learning',
+  cn: 'Computer Networks',
+  nlp: 'NLP',
+  cloud: 'Cloud Computing',
+};
+
 const LEVELS = [
   { id: 1, name: 'Zero level', hint: 'What it is, why it exists, what it solves' },
   { id: 2, name: 'Technical', hint: 'Definition, architecture, components, maths' },
@@ -68,6 +75,14 @@ export function Learn() {
     setParams({ topic: id }, { replace: true });
   };
 
+  const openSubject = (id: SubjectId) => {
+    const pool = ALL_TOPICS.filter((t) => t.subjectId === id);
+    const target = pool.find((t) => getStatus(state, t.id) === 'not_started') ?? pool[0];
+    setFilter('');
+    setLevel(1);
+    setParams({ subject: id, topic: target.id }, { replace: true });
+  };
+
   const study = () => {
     set((cur) => {
       let next = markLearned(cur, [topic.id]);
@@ -101,7 +116,20 @@ export function Learn() {
 
       <div className="grid split">
         <Card className="card" >
-          <CardHead title="Syllabus" sub={`${subject?.units.length} units`} />
+          <CardHead title="Syllabus" sub={`${subject?.name} · ${subject?.units.length} units`} />
+          <div className="row wrap" style={{ gap: 4, marginBottom: 8 }} role="group" aria-label="Choose subject">
+            {SUBJECTS.map((s) => (
+              <button
+                key={s.id}
+                className={`btn sm ${s.id === topic.subjectId ? 'primary' : 'ghost'}`}
+                onClick={() => openSubject(s.id)}
+                title={`${s.name} (${s.code})`}
+                aria-pressed={s.id === topic.subjectId}
+              >
+                {SUBJECT_SHORT[s.id]}
+              </button>
+            ))}
+          </div>
           <input
             type="text"
             placeholder="Filter topics…"

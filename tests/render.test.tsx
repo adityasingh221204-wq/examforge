@@ -71,6 +71,14 @@ describe('page rendering', () => {
     });
   }
 
+  it('offers a subject switcher on the Learn page', () => {
+    const html = render(<Learn />, '/learn?topic=dl-u2-t5');
+    for (const label of ['Deep Learning', 'Computer Networks', 'NLP', 'Cloud Computing']) {
+      expect(html).toContain(label);
+    }
+    expect(html).toContain('Choose subject');
+  });
+
   it('renders a known subject topic in the Learn page', () => {
     const html = render(<Learn />, '/learn?topic=dl-u2-t5');
     expect(html).toContain('Backpropagation');
