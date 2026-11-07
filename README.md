@@ -9,7 +9,7 @@ An examination-preparation system built from four official university syllabi â€
 own notes, slides or past papers and they are analysed and filed under the matching syllabus topics.
 
 [![Live app](https://img.shields.io/badge/live-app-8b7cf6?style=for-the-badge)](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page)
-[![Tests](https://img.shields.io/badge/tests-79%20passing-10b981?style=flat-square)](#testing)
+[![Tests](https://img.shields.io/badge/tests-80%20passing-10b981?style=flat-square)](#testing)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev/)
 [![Vite 8](https://img.shields.io/badge/Vite-8-646cff?style=flat-square)](https://vite.dev/)
@@ -110,7 +110,7 @@ No environment variables, API keys or services are required.
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npx tsc --noEmit` | Type-check only |
-| `npx vitest run` | Run the 79-test suite |
+| `npx vitest run` | Run the 80-test suite |
 
 ## Data in the repository
 
@@ -123,7 +123,7 @@ No environment variables, API keys or services are required.
 | Questions with rubrics | 688 |
 | Numerical solvers | 27 |
 | Hand-authored diagrams | 54 (+118 derived component flows) |
-| Automated tests | 79 |
+| Automated tests | 80 |
 
 The syllabus is the source of truth. Topic names are never rewritten, merged or invented, and a build-time
 audit (`MISSING_CONTENT`, `ORPHAN_CONTENT`) fails the test suite if the data ever drifts out of sync.

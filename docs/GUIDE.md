@@ -75,7 +75,7 @@ src/
 tests/
   qa.test.ts          28 engine/data assertions
   ingest.test.ts      36 material-ingest assertions
-  render.test.tsx     15 page-render smoke tests
+  render.test.tsx     16 page-render smoke tests
 worker.js             Cloudflare Worker entrypoint (serves dist/)
 deploy.json           deployment manifest
 ```
@@ -231,7 +231,8 @@ counters and per-subject coverage are computed live. This is the page that prove
 timetable grouped by date with each session's topics, objectives, questions and status, plus the
 explanation of how allocation works, rebalance and regenerate.
 
-**5. Learn** — syllabus browser on the left; on the right the five levels as numbered tabs, learning
+**5. Learn** — a subject switcher (Deep Learning · Computer Networks · NLP · Cloud Computing) above the
+syllabus browser on the left; on the right the five levels as numbered tabs, learning
 objectives, the diagram or comparison table for Level 3, formula cards, a level-completion tracker that
 records which of the five levels you have actually covered, and a **Your material** card holding every
 imported block filed under the topic (summary, key terms, full text, remove).
@@ -407,7 +408,7 @@ Clearing browser site data deletes progress — export first if it matters.
 npm ci                # install (lockfile is authoritative)
 npm run dev           # http://localhost:3000
 npx tsc --noEmit      # typecheck
-npx vitest run        # 79 tests
+npx vitest run        # 80 tests
 npm run build         # production build into dist/
 ```
 
@@ -420,7 +421,7 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 ## 16. Verification record
 
 - `tsc --noEmit` clean.
-- **79/79 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
+- **80/80 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
   with five non-empty levels, zero missing/orphan content, four questions per topic with rubrics
   summing to marks and unique MCQ options, 27 numericals solving deterministically, planner rules
   (no travel days, no exam-morning sessions, sleep boundaries respected, sessions inside study blocks),

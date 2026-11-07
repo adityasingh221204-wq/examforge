@@ -7,7 +7,7 @@ as such rather than implied to be tested.
 
 ```bash
 npx tsc --noEmit     # type-check, strict mode            → clean
-npx vitest run       # 79 tests in 3 files                 → 79 passed
+npx vitest run       # 80 tests in 3 files                 → 80 passed
 npm run build        # tsc + vite build                    → dist/ produced
 ```
 
@@ -42,7 +42,7 @@ npm run build        # tsc + vite build                    → dist/ produced
 | Library | Summary counts and kind histogram; search over title/summary/key terms/source |
 | Migration | A `version: 1` save without `materials` loads as `version: 2` with empty arrays and its progress intact |
 
-## Page render tests (`tests/render.test.tsx`, 15 tests)
+## Page render tests (`tests/render.test.tsx`, 16 tests)
 
 Every one of the 13 pages is server-rendered inside the real store and router, asserting substantial markup
 and no `undefined`/`NaN` leaking into the output. Learn is additionally checked for a known topic's content
