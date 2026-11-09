@@ -75,7 +75,7 @@ src/
 tests/
   qa.test.ts          28 engine/data assertions
   ingest.test.ts      36 material-ingest assertions
-  render.test.tsx     16 page-render smoke tests
+  render.test.tsx     18 page-render smoke tests
 worker.js             Cloudflare Worker entrypoint (serves dist/)
 deploy.json           deployment manifest
 ```
@@ -214,7 +214,7 @@ imminent one; `missedCount()` drives the reschedule banner.
 
 ---
 
-## 8. The thirteen pages
+## 8. The fourteen pages
 
 **1. Dashboard** — exam countdowns, overall coverage vs mastery, today's schedule with complete/skip,
 today's learning objectives drawn from the scheduled topics, the revision queue snapshot, subject
@@ -267,6 +267,15 @@ number is computed from attempts, study logs and mock results — no invented st
 travel window, daily target, mastery pass mark, data counters, export/import, reset.
 
 **13. Add Material** — import and file your own notes (full walkthrough below).
+
+**14. Study Book** — the whole subject as one continuous book rather than a page of tabs: chapters in
+syllabus order, each topic written out as a section (what it is, why it exists, the problem it solves,
+how it works, formal definition, building blocks, formulas, diagram, comparison table, worked example,
+where it is used, strengths and limits, exam vocabulary). It shows chapters, topics, word count and an
+estimated reading time, offers a chapter range and a table of contents, remembers the section you
+stopped at, saves the whole subject as one self-contained `.html` file (opens with no signal on any phone) and prints to a clean black-on-white PDF. This is the page for a train with no signal: the
+app registers a service worker, so once it has been opened online the book — and every other page —
+opens from cache. The badge in the header says **Available offline** once the cache is in place.
 
 ### Adding your own material (page 13)
 
@@ -408,7 +417,7 @@ Clearing browser site data deletes progress — export first if it matters.
 npm ci                # install (lockfile is authoritative)
 npm run dev           # http://localhost:3000
 npx tsc --noEmit      # typecheck
-npx vitest run        # 80 tests
+npx vitest run        # 85 tests
 npm run build         # production build into dist/
 ```
 
@@ -421,7 +430,7 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 ## 16. Verification record
 
 - `tsc --noEmit` clean.
-- **80/80 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
+- **85/85 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
   with five non-empty levels, zero missing/orphan content, four questions per topic with rubrics
   summing to marks and unique MCQ options, 27 numericals solving deterministically, planner rules
   (no travel days, no exam-morning sessions, sleep boundaries respected, sessions inside study blocks),

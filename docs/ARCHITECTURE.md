@@ -43,12 +43,14 @@ src/
 │   ├── revision.ts       spaced repetition stages, grading, question selection
 │   ├── scoring.ts        objective grading, rubric evaluator, mock assembly
 │   ├── analytics.ts      streaks, accuracy series, heatmap, mock reports
+│   ├── book.ts           study-book assembly: chapters, sections, word counts, reading time
 │   ├── ingest.ts         material analysis: sectioning, classification, topic matching,
 │   │                     summarising, de-duplication, commit/remove helpers
 │   └── extract.ts        browser file reading: pdf.js text layer, text/HTML/JSON, limits
 ├── state/store.tsx       StoreProvider / useStore — one AppState, persisted
-├── pages/                Dashboard, Ingest, Subjects, Tracker, Planner, Learn, Bank, Lab,
+├── pages/                Dashboard, Ingest, Subjects, Tracker, Planner, Learn, Book, Bank, Lab,
 │                         Practice, Mocks, Revision, Analytics, Settings
+├── public/               sw.js (offline shell), manifest.webmanifest, icons
 ├── components/           ui.tsx, charts.tsx, diagram.tsx, QuestionView.tsx
 ├── styles.css            design system
 ├── App.tsx               shell: sidebar, topbar, routes

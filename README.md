@@ -9,7 +9,7 @@ An examination-preparation system built from four official university syllabi �
 own notes, slides or past papers and they are analysed and filed under the matching syllabus topics.
 
 [![Live app](https://img.shields.io/badge/live-app-8b7cf6?style=for-the-badge)](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page)
-[![Tests](https://img.shields.io/badge/tests-80%20passing-10b981?style=flat-square)](#testing)
+[![Tests](https://img.shields.io/badge/tests-85%20passing-10b981?style=flat-square)](#testing)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev/)
 [![Vite 8](https://img.shields.io/badge/Vite-8-646cff?style=flat-square)](https://vite.dev/)
@@ -49,6 +49,7 @@ content, question bank and evaluation engines are all deterministic code and aut
 | **Mock examinations** | 120-minute timer, full-screen mode, flagging, autosave, submit confirmation, automatic marking and a detailed per-topic report. |
 | **Analytics** | Coverage, mastery, accuracy, streaks, heatmaps and mock trends — all computed from recorded attempts and study logs. |
 | **Material ingest** | Drop a PDF, Markdown, CSV or pasted chapter: it is split into blocks, matched against all 172 topics with a confidence score, de-duplicated, reviewed by you, then filed under the topic and shown on the Learn page. |
+| **Offline study book** | Each subject as one continuous, printable book in syllabus order — chapters, definitions, diagrams, worked examples and exam vocabulary on one page, with reading time and a saved position. The app installs to the home screen and opens with no signal after one online visit. |
 
 ## Screenshots
 
@@ -56,9 +57,13 @@ content, question bank and evaluation engines are all deterministic code and aut
 | --- | --- |
 | ![Tracker](docs/assets/tracker.png) | ![Learn](docs/assets/learn.png) |
 
-| Study planner | Revision centre |
+| Study book — offline, one page per subject | Study planner |
 | --- | --- |
-| ![Planner](docs/assets/planner.png) | ![Revision](docs/assets/revision.png) |
+| ![Study book](docs/assets/book.png) | ![Planner](docs/assets/planner.png) |
+
+| Revision centre |
+| --- |
+| ![Revision](docs/assets/revision.png) |
 
 | Numerical lab | Mock examinations |
 | --- | --- |
@@ -110,7 +115,7 @@ No environment variables, API keys or services are required.
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npx tsc --noEmit` | Type-check only |
-| `npx vitest run` | Run the 80-test suite |
+| `npx vitest run` | Run the 85-test suite |
 
 ## Data in the repository
 
@@ -123,7 +128,7 @@ No environment variables, API keys or services are required.
 | Questions with rubrics | 688 |
 | Numerical solvers | 27 |
 | Hand-authored diagrams | 54 (+118 derived component flows) |
-| Automated tests | 80 |
+| Automated tests | 85 |
 
 The syllabus is the source of truth. Topic names are never rewritten, merged or invented, and a build-time
 audit (`MISSING_CONTENT`, `ORPHAN_CONTENT`) fails the test suite if the data ever drifts out of sync.
