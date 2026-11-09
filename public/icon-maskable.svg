@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="EXAMFORGE">
+  <rect width="512" height="512" fill="#1c1b19"/>
+  <rect x="136" y="152" width="240" height="208" rx="14" fill="#26251f" stroke="#b3a6d6" stroke-width="9"/>
+  <path d="M256 152v208" stroke="#b3a6d6" stroke-width="9"/>
+  <path d="M164 194h66M164 224h66M164 254h48M300 194h66M300 224h66M300 254h48" stroke="#5fb08a" stroke-width="11" stroke-linecap="round"/>
+</svg>

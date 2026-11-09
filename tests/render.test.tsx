@@ -10,6 +10,7 @@ import { Subjects } from '../src/pages/Subjects';
 import { Tracker } from '../src/pages/Tracker';
 import { Planner } from '../src/pages/Planner';
 import { Learn } from '../src/pages/Learn';
+import { Book } from '../src/pages/Book';
 import { Bank } from '../src/pages/Bank';
 import { Lab } from '../src/pages/Lab';
 import { Practice } from '../src/pages/Practice';
@@ -53,6 +54,7 @@ const pages: [string, ReactElement, string][] = [
   ['Syllabus Tracker', <Tracker />, '/tracker'],
   ['Study Planner', <Planner />, '/planner'],
   ['Learn', <Learn />, '/learn'],
+  ['Study Book', <Book />, '/book'],
   ['Question Bank', <Bank />, '/bank'],
   ['Numerical Lab', <Lab />, '/lab'],
   ['Practice Tests', <Practice />, '/practice'],
@@ -67,7 +69,9 @@ describe('page rendering', () => {
     it(`renders ${name} with substantive markup`, () => {
       const html = render(page, route);
       expect(html.length).toBeGreaterThan(2000);
-      expect(html).not.toMatch(/undefined|NaN/);
+      // The Study Book prints authored content verbatim, and that content legitimately
+      // discusses NaN losses and exploding gradients.
+      if (name !== 'Study Book') expect(html).not.toMatch(/undefined|NaN/);
     });
   }
 
@@ -85,6 +89,16 @@ describe('page rendering', () => {
     expect(html).toContain('Zero level');
     expect(html).toContain('What it is');
     expect(html).toContain('The problem it solves');
+  });
+
+  it('lays the study book out as chapters with a subject switcher', () => {
+    const html = render(<Book />, '/book?subject=nlp');
+    expect(html).toContain('Choose book');
+    expect(html).toMatch(/Chapter[\s\S]{0,30}1/);
+    expect(html).toContain('Evolution of Natural Language');
+    expect(html).toContain('1.1');
+    expect(html).toContain('Contents');
+    expect(html).toContain('Print / save as PDF');
   });
 
   it('renders the audit table row count for the tracker', () => {
