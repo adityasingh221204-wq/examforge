@@ -7,7 +7,7 @@ as such rather than implied to be tested.
 
 ```bash
 npx tsc --noEmit     # type-check, strict mode            → clean
-npx vitest run       # 85 tests in 4 files                 → 85 passed
+npx vitest run       # 107 tests in 5 files                → 107 passed
 npm run build        # tsc + vite build                    → dist/ produced
 ```
 
@@ -42,9 +42,21 @@ npm run build        # tsc + vite build                    → dist/ produced
 | Library | Summary counts and kind histogram; search over title/summary/key terms/source |
 | Migration | A `version: 1` save without `materials` loads as `version: 2` with empty arrays and its progress intact |
 
+## Active plan (`tests/plan.test.ts`, 22 tests)
+
+| Area | Assertion |
+|---|---|
+| Syllabus distribution | The registered per-unit counts (8/13/9/13/5, 7/9/9/12/10, 15/12/9/5/7, 8/8/6/3/4) and 172 unique topics |
+| Structure | 15 days from 12 to 26 November, nothing scheduled before 19:00 on 12 November, every block inside the waking day, an exam session 09:30–11:30 on each paper day, no first-pass or practice before the paper ends |
+| Coverage | Exactly one first pass for each of the 172 topics, never after its paper |
+| Activation | Sets `plan` and `timetable.mode = 'plan'`, keeps progress/assessments and completed history, idempotent, future-only replacement, routine and 8-hour target applied |
+| Completion | Marking a session done logs its minutes without creating or promoting any topic status |
+| Redistribution | Missed first-pass topics move into later sessions of the same subject before its exam, never into the night-before first-pass block, are flagged missed rather than completed, and completed sessions are untouched |
+| Reminders | Daily recall reminder at the configured time, exam warning inside the 24 h window, overdue-work warning, all with IST clock handling |
+
 ## Page render tests (`tests/render.test.tsx`, 18 tests)
 
-Every one of the 13 pages is server-rendered inside the real store and router, asserting substantial markup
+Every one of the 14 pages is server-rendered inside the real store and router, asserting substantial markup
 and no `undefined`/`NaN` leaking into the output. Learn is additionally checked for a known topic's content
 (Backpropagation, zero-level sections), and the tracker for its 172-topic table.
 

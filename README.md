@@ -5,11 +5,11 @@
 **Understand. Apply. Master. Score.**
 
 An examination-preparation system built from four official university syllabi — 172 topics, 688 questions,
-27 numerical solvers, an adaptive study planner, spaced repetition and full mock examinations. Import your
+27 numerical solvers, an active date-wise examination planner, spaced repetition and full mock examinations. Import your
 own notes, slides or past papers and they are analysed and filed under the matching syllabus topics.
 
 [![Live app](https://img.shields.io/badge/live-app-8b7cf6?style=for-the-badge)](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page)
-[![Tests](https://img.shields.io/badge/tests-85%20passing-10b981?style=flat-square)](#testing)
+[![Tests](https://img.shields.io/badge/tests-107%20passing-10b981?style=flat-square)](#testing)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev/)
 [![Vite 8](https://img.shields.io/badge/Vite-8-646cff?style=flat-square)](https://vite.dev/)
@@ -44,7 +44,8 @@ content, question bank and evaluation engines are all deterministic code and aut
 | **Question bank** | 688 questions (3/4/5 marks, difficulty 1–5) each with expected answer structure, model answer, explanation, common mistakes and a mark-wise rubric. |
 | **Numerical lab** | 27 solvers across DL, CN, NLP and Cloud. Given → required → formula → why → substitution → steps → answer → mistakes, with re-solving practice mode. |
 | **Answer evaluator** | Scores typed answers against the rubric, names the missed marks and checks length and structure. Incomplete answers cannot receive full marks. |
-| **Adaptive planner** | Two modes (syllabus sprint, exam-wise revision). Respects sleep, the travel window and exam mornings; automatically reorganises missed sessions. |
+| **Active examination plan** | A real date-wise plan for 12–26 November 2026: 15 days, 61 sessions, four papers, one first pass of every topic before its exam, daily recall, practice and a mock per paper. Activation keeps all progress; missed work is redistributed into later capacity, never past the paper and never in place of sleep. Sprint and exam-wise modes remain available. |
+| **Reminders** | Local browser notifications for the daily recall block, an exam inside 24 h or 3 h, and overdue work — while the app is open, each fired once per day. |
 | **Spaced repetition** | 0 / 1 / 3 / 7 / 14 / 30-day stages; a wrong answer demotes and re-explains, a correct one lengthens the interval and raises difficulty. |
 | **Mock examinations** | 120-minute timer, full-screen mode, flagging, autosave, submit confirmation, automatic marking and a detailed per-topic report. |
 | **Analytics** | Coverage, mastery, accuracy, streaks, heatmaps and mock trends — all computed from recorded attempts and study logs. |
@@ -52,6 +53,10 @@ content, question bank and evaluation engines are all deterministic code and aut
 | **Offline study book** | Each subject as one continuous, printable book in syllabus order — chapters, definitions, diagrams, worked examples and exam vocabulary on one page, with reading time and a saved position. The app installs to the home screen and opens with no signal after one online visit. |
 
 ## Screenshots
+
+| Active plan — dashboard | Active plan — planner and exam mornings |
+| --- | --- |
+| ![Dashboard](docs/assets/plan-dashboard.png) | ![Planner](docs/assets/plan-planner.png) |
 
 | Syllabus tracker (all 172 topics) | Learn — five levels per topic |
 | --- | --- |
@@ -115,7 +120,7 @@ No environment variables, API keys or services are required.
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npx tsc --noEmit` | Type-check only |
-| `npx vitest run` | Run the 85-test suite |
+| `npx vitest run` | Run the 107-test suite |
 
 ## Data in the repository
 
@@ -128,7 +133,7 @@ No environment variables, API keys or services are required.
 | Questions with rubrics | 688 |
 | Numerical solvers | 27 |
 | Hand-authored diagrams | 54 (+118 derived component flows) |
-| Automated tests | 85 |
+| Automated tests | 107 |
 
 The syllabus is the source of truth. Topic names are never rewritten, merged or invented, and a build-time
 audit (`MISSING_CONTENT`, `ORPHAN_CONTENT`) fails the test suite if the data ever drifts out of sync.
@@ -141,7 +146,7 @@ src/
   engine/    dates, storage, progress, scheduler, revision, scoring, analytics — pure TypeScript
              ingest (material analysis), extract (PDF/text reading)
   state/     single React context store, auto-persisted
-  pages/     13 pages
+  pages/     14 pages
   components/ ui primitives, SVG charts, diagram renderer, question view
 tests/       engine/data QA suite + page render suite
 worker.js    Cloudflare Worker entrypoint serving the built SPA
@@ -160,12 +165,13 @@ Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 npx vitest run
 ```
 
-79 assertions covering syllabus integrity, content completeness (all five levels present for all 172
+107 tests covering syllabus integrity, content completeness (all five levels present for all 172
 topics), bank invariants (rubrics sum to marks, MCQ options unique), numerical determinism, planner
 constraints (no sessions on travel days or exam mornings, sleep never violated, sessions inside study
 blocks), mastery gating, spaced-repetition behaviour, evaluator fairness, material ingest (sectioning,
-classification, topic matching, subject detection, de-duplication, state migration) and a render smoke test
-for all thirteen pages. See [docs/QA.md](docs/QA.md).
+classification, topic matching, subject detection, de-duplication, state migration), the active
+November plan (one first pass per topic before its paper, protected exam mornings, activation that preserves
+progress, redistribution, reminders) and a render smoke test for all fourteen pages. See [docs/QA.md](docs/QA.md).
 
 ## Deployment
 

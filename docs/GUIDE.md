@@ -69,7 +69,7 @@ src/
     ingest.ts         material analysis: sectioning, matching, de-duplication
     extract.ts        browser file reading (pdf.js, text, HTML, JSON)
   state/store.tsx     React context store: one AppState, auto-persisted
-  pages/              13 pages (Dashboard, Add Material … Settings)
+  pages/              14 pages (Dashboard, Add Material … Settings)
   components/         ui primitives, SVG charts, diagram renderer, QuestionView
   styles.css          neumorphic design system
 tests/
@@ -178,17 +178,42 @@ Six states: `NOT STARTED → IN PROGRESS → LEARNED → PRACTISED → MASTERED`
 
 ## 7. The planner
 
-`generateSchedule(state, mode, from)` produces date-wise sessions that respect every constraint.
+The planner has three modes: the **active examination plan** (the default since 12 Nov), the **syllabus
+sprint** and **exam-wise revision**. All three obey the same constraints.
 
 ### Hard rules (never violated)
-1. **Sleep is untouchable.** No session may start before `wake` (07:30) or end after `sleep` (22:30).
-2. **Travel window** (4–11 Nov by default, editable) is excluded from compulsory study. No sessions are
-   generated on those dates at all.
-3. **Exam mornings are reserved.** On an exam day, no study block may start before that exam ends + 30
-   minutes. The subject being examined is not scheduled that morning either.
-4. **Blocks are the only slots.** Sessions exist only inside blocks whose `kind === 'study'`
-   (default four: 08:30–10:30, 10:50–12:50, 14:00–16:00, 16:45–18:45 — eight focused hours).
+1. **Sleep is untouchable.** No generated session may start before `wake` (07:30) or end after `sleep`
+   (22:30). The one exception is the plan's own 06:45 exam-morning wake-up, which is a routine block,
+   not study.
+2. **Travel window** (editable) is excluded from compulsory study. No sessions are generated on those
+   dates at all.
+3. **Exam mornings are reserved.** On an exam day, no study block may start before that exam ends. The
+   subject being examined is not taught that morning either.
+4. **Blocks are the only slots.** Generated sessions exist only inside blocks whose `kind === 'study'`
+   (four: 08:30–10:30, 11:00–13:00, 14:00–15:30, 16:00–17:30 — seven focused hours, plus the
+   19:30–20:30 recall block).
 5. **Constant duration.** A session's length equals its block's length; nothing overruns.
+
+### Mode C — Active examination plan (12–26 November 2026)
+Declared in `src/data/plan.ts` and built by `src/engine/plan.ts`. It is a real date-wise plan, not a
+priority rule: 15 days, 61 study sessions, four papers. Each slot names the subject, the units and the
+exact topic slice (for example *Deep Learning Unit 2 — first 6 topics* → `dl-u2-t1…t6`), so every one
+of the 172 official topics gets exactly one first pass before its paper, and the four mock papers and
+daily recall blocks are on fixed dates. The plan also sets the daily routine (four study blocks, lunch,
+exercise, dinner, one recall hour) and an 8-hour daily target.
+
+Activation (`activatePlan`) is additive: it writes the plan's future sessions, keeps every completed
+session and past history, keeps all topic progress, assessments, revisions and imported material, and
+marks `AppState.plan` active. Re-activating is idempotent (session ids are `plan_<date>_<hhmm>`), and
+the engine rebuilds when `PLAN_REVISION` changes without duplicating anything.
+
+A finished session **never** changes a topic to `MASTERED`; it only logs the minutes. Mastery still
+requires a passed assessment at the configured pass mark.
+
+`redistributeMissed()` flags past unfinished plan sessions as missed, collects their still-uncovered
+first-pass topics, and appends them to later sessions of the same subject that have capacity — never
+past the day of that paper and never as new first-pass material in the 19:30 block of the night before.
+Anything that cannot fit is reported, not silently dropped.
 
 ### Mode A — Seven-day syllabus sprint
 Prioritises *coverage*: the subject with the earliest exam and the lowest covered percentage is
@@ -227,9 +252,10 @@ and a jump into any unit.
 for all 172 topics. Filter by subject, unit or status; every status is editable inline; progress
 counters and per-subject coverage are computed live. This is the page that proves nothing is missing.
 
-**4. Study Planner** — mode switch (sprint / exam-wise), the editable daily routine, the generated
-timetable grouped by date with each session's topics, objectives, questions and status, plus the
-explanation of how allocation works, rebalance and regenerate.
+**4. Study Planner** — mode switch (examination plan / sprint / exam-wise), the active plan board with
+per-day completion and exam countdowns, the editable daily routine, the generated timetable grouped by
+date with each session's title, topics, objectives, questions and status, plus redistribute, rebuild and
+the explanation of how allocation works.
 
 **5. Learn** — a subject switcher (Deep Learning · Computer Networks · NLP · Cloud Computing) above the
 syllabus browser on the left; on the right the five levels as numbered tabs, learning
@@ -360,43 +386,52 @@ Stages and intervals: **0 → immediate, 1 → +1 day, 2 → +3 days, 3 → +7 d
 
 ---
 
-## 13. Daily operating playbook (13 days to the first exam)
+## 13. The active plan, day by day
 
-Assumption: today is 4 Nov, the travel window 4–11 Nov is free of compulsory study, and the first
-paper is Deep Learning on 17 Nov. Adjust in Settings if your dates differ.
+The planner is not illustrative any more: the 12–26 November plan is what the app schedules. Sleep
+22:30–07:30, study 08:30–10:30, 11:00–13:00, 14:00–15:30, 16:00–17:30, recall 19:30–20:30, with lunch,
+exercise and dinner protected. Each day below is exactly what appears in **Planner**.
 
-**4–11 Nov (travel)** — nothing compulsory. Optional: read one Learn topic a day, or clear the revision
-queue if it is short. Sleep 8–9 hours; the plan already protects it.
+**12 Nov (evening)** — Deep Learning orientation 19:00–20:15 (Unit 1 first three topics), dinner
+20:15–20:45, forward/backward propagation primer 20:45–21:30, prepare tomorrow's material 21:30–21:45.
 
-**12–13 Nov (2 days)** — Mode A sprint, four blocks/day. Remaining Deep Learning units in exam order,
-weighting the numerical topics (convolutions, optimisers, backpropagation). Mark sessions complete as
-you go so coverage is real.
+**13 Nov** — DL Unit 1 · DL Unit 2 topics 1–6 · CN Unit 1 · DL practice · CN recall.
 
-**14–15 Nov** — Deep Learning consolidation: Practice Tests per unit, then two Full mocks. Anything
-scored below 70% becomes `NEEDS REVISION` and enters the queue immediately. Answer written questions
-by hand and type them into the evaluator to train structure and length.
+**14 Nov** — DL Unit 2 topics 7–13 · DL Unit 3 topics 1–5 · CN Unit 2 · DL numericals · CN recall.
 
-**16 Nov** — No new topics. Revision queue only, plus one Advanced mock in the morning. Stop by 18:45.
+**15 Nov** — DL Unit 3 topics 6–9 · DL Unit 4 topics 1–8 · CN Unit 3 · DL practice · CN recall.
 
-**17 Nov** — Deep Learning exam, 09:30–11:30. The planner schedules nothing before it. After 12:00 the
-plan switches to Computer Networks.
+**16 Nov** — DL Unit 4 topics 9–13 · DL Unit 5 · CN Unit 4 topics 1–6 · full DL mock + analysis ·
+DL final revision.
 
-**18 Nov** — CN consolidation: unit practice plus one full mock; revision queue for CN.
+**17 Nov** — Deep Learning paper 09:30–11:30. Wake 06:45, light revision 07:30, travel 08:00, campus
+08:30. Rest after. CN Unit 4 topics 7–12 at 16:00, CN Unit 5 topics 1–3 at 19:30.
 
-**19 Nov** — CN exam. Afternoon switches to NLP.
+**18 Nov** — CN Unit 5 topics 4–10 · Units 1–2 revision · Units 3–4 revision · full CN mock ·
+formulas/numericals/mistakes.
 
-**20–23 Nov** — NLP: sprint remaining units, practice per unit, two mocks, revision queue daily.
+**19 Nov** — Computer Networks paper 09:30–11:30; rest for the remainder of the day.
 
-**24 Nov** — NLP exam. Afternoon switches to Cloud.
+**20 Nov** — NLP Unit 1 · NLP Unit 2 topics 1–4 · preprocessing and examples · NLP questions · recall.
 
-**25 Nov** — Cloud consolidation: units, one full mock, revision queue. Sleep by 22:30 — no cramming.
+**21 Nov** — NLP Unit 2 topics 5–12 · NLP Unit 3 topics 1–4 · Unit 2 practice · Unit 3 examples · recall.
 
-**26 Nov** — Cloud exam. Done.
+**22 Nov** — NLP Unit 3 topics 5–9 · NLP Unit 4 · practice questions · weak-topic revision · recall.
 
-Every day: open **Dashboard**, do the sessions in order, complete them, clear **Revision**, and only
-then look at Analytics. If a day collapses, press **Rebalance** — the plan rebuilds itself.
+**23 Nov** — NLP Unit 5 · full syllabus revision · algorithms/diagrams/comparisons · full NLP mock ·
+mock analysis. Nothing new after 19:30.
 
----
+**24 Nov** — NLP paper 09:30–11:30. Rest, then Cloud Unit 1 at 16:00 and Cloud Unit 2 topics 1–4 at 19:30.
+
+**25 Nov** — Cloud Unit 2 topics 5–8 · Unit 3 · Units 4–5 · full Cloud mock · final revision and
+mistake correction.
+
+**26 Nov** — Cloud paper 09:30–11:30. Final paper of the schedule.
+
+Every day: open **Dashboard**, work the sessions in order, mark each one done, clear the revision queue,
+and read one mock report before bed. If a day collapses, press **Redistribute missed** — unfinished
+topics move into later capacity, the paper's own eve stays revision-only, and nothing is marked
+complete for you.
 
 ## 14. Data portability
 
@@ -417,7 +452,7 @@ Clearing browser site data deletes progress — export first if it matters.
 npm ci                # install (lockfile is authoritative)
 npm run dev           # http://localhost:3000
 npx tsc --noEmit      # typecheck
-npx vitest run        # 85 tests
+npx vitest run        # 107 tests
 npm run build         # production build into dist/
 ```
 
@@ -430,14 +465,18 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 ## 16. Verification record
 
 - `tsc --noEmit` clean.
-- **85/85 tests passing**: syllabus integrity (20 units, 172 unique topics), all 172 content records
+- **107/107 tests passing**: syllabus integrity (20 units, 172 unique topics, the exact 8/13/9/13/5,
+  7/9/9/12/10, 15/12/9/5/7 and 8/8/6/3/4 per-unit distribution), all 172 content records
   with five non-empty levels, zero missing/orphan content, four questions per topic with rubrics
   summing to marks and unique MCQ options, 27 numericals solving deterministically, planner rules
   (no travel days, no exam-morning sessions, sleep boundaries respected, sessions inside study blocks),
   mastery gating, revision stage advance/reset/rotation, evaluator fairness (no full marks for vague
   answers), advanced mocks restricted to difficulty ≥4, material ingest (cleaning, sectioning,
   classification, four-subject matching, subject detection, de-duplication, commit/remove, v1→v2 state
-  migration), and a render smoke test for all 13 pages.
+  migration), the November plan (15 days, one first pass per topic before its paper, protected exam
+  mornings, no new material in the night-before block, activation preserving progress and completion,
+  idempotent rebuilds, redistribution that never completes or overruns a paper, reminder timing), and
+  a render smoke test for all 14 pages.
 - Production build succeeds; deployed HTML, JS and CSS verified over HTTP with correct content types,
   and unknown paths fall back to the app shell.
 
@@ -459,6 +498,9 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 - **Material matching is lexical.** It reads headings and vocabulary, so a block that never names its
   topic, or uses terminology the syllabus does not, needs a manual assignment on the review screen.
   Scanned PDFs need OCR before import; `.docx`/`.pptx` must be exported to PDF or text.
+- **Reminders are local only.** The app can raise a browser notification for the daily recall block, an
+  exam inside the 24 h / 3 h window, and overdue work — but only while EXAMFORGE is open. There is no
+  server and no push subscription, so it cannot ring when the browser is closed.
 - **No browser-based UI test.** Pages are verified by server-rendering and by HTTP against the deployed
   build; interactive behaviour (typing, timer countdown) has not been driven by an automated browser.
 

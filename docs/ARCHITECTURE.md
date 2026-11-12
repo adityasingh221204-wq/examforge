@@ -26,6 +26,7 @@ src/
 │   ├── types.ts          all contracts: Topic, Unit, Subject, TopicContent, Question,
 │   │                     NumericalSpec, AppState, MockResult, RevisionItem, …
 │   ├── syllabus.ts       SUBJECTS (nested), ALL_TOPICS, TOPIC_MAP, unitOf, UNIT_COUNT, TOPIC_COUNT
+│   ├── plan.ts           declarative 12–26 November plan: days, slots, topic slices, blocks
 │   ├── labels.ts         display strings shared by pages
 │   ├── content/
 │   │   ├── base.ts       c() builder: fills optional fields, guarantees a Level-3 visual
@@ -41,6 +42,9 @@ src/
 │   ├── progress.ts       statuses, coverage, assessments, mastery gating
 │   ├── scheduler.ts      timetable generation, reorganisation, queries
 │   ├── revision.ts       spaced repetition stages, grading, question selection
+│   ├── plan.ts           November plan engine: session building, activation, summary,
+│   │                     missed-work redistribution, completion logging
+│   ├── reminders.ts      IST reminder windows (daily recall, exam lead, overdue)
 │   ├── scoring.ts        objective grading, rubric evaluator, mock assembly
 │   ├── analytics.ts      streaks, accuracy series, heatmap, mock reports
 │   ├── book.ts           study-book assembly: chapters, sections, word counts, reading time
