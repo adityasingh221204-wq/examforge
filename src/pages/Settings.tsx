@@ -3,18 +3,48 @@
 import { useRef, useState } from 'react';
 import { useStore } from '../state/store';
 import { parseImportedState } from '../engine/storage';
-import { ALL_TOPICS } from '../data/syllabus';
+import { ALL_TOPICS, SUBJECTS } from '../data/syllabus';
 import { ALL_QUESTIONS } from '../data/bank';
+import { planSummary } from '../engine/plan';
+import { PLAN_ID, PLAN_TITLE } from '../data/plan';
+import { currentReminder, deliver, requestNotificationPermission, reminderSupported } from '../engine/reminders';
+import { prettyDate } from '../engine/dates';
 import { Card, CardHead, Field } from '../components/ui';
 
 export function SettingsPage() {
-  const { state, set, resetAll, exportJson, replace, notify } = useStore();
+  const { state, set, resetAll, exportJson, replace, notify, activateExamPlan } = useStore();
   const fileRef = useRef<HTMLInputElement>(null);
   const [pass, setPass] = useState(state.settings.passPercent);
   const [target, setTarget] = useState(Math.round(state.settings.dailyTargetMin / 60));
+  const [permission, setPermission] = useState<NotificationPermission | 'unsupported'>(
+    reminderSupported() ? Notification.permission : 'unsupported',
+  );
+  const plan = planSummary(state);
+  const planActive = state.plan?.id === PLAN_ID;
 
   const patchSettings = (patch: Partial<typeof state.settings>) =>
     set((cur) => ({ ...cur, settings: { ...cur.settings, ...patch } }));
+
+  const patchReminders = (patch: Partial<typeof state.reminders>) =>
+    set((cur) => ({ ...cur, reminders: { ...cur.reminders, ...patch } }));
+
+  const enableNotifications = async () => {
+    if (!reminderSupported()) {
+      notify('This browser does not support notifications.');
+      return;
+    }
+    const result = await requestNotificationPermission();
+    setPermission(result);
+    if (result === 'granted') {
+      patchReminders({ desktopEnabled: true });
+      const reminder = currentReminder(state);
+      notify('Desktop reminders enabled — they fire while EXAMFORGE is open.');
+      if (reminder) deliver(reminder);
+    } else {
+      patchReminders({ desktopEnabled: false });
+      notify('Notification permission was not granted — in-app reminders stay on.');
+    }
+  };
 
   const updateBlock = (id: string, patch: Partial<{ start: string; end: string; label: string }>) =>
     set((cur) => ({
@@ -72,7 +102,9 @@ export function SettingsPage() {
         <Card>
           <CardHead title="Daily routine" sub="Every block is editable; sleep is protected" />
           <div className="col" style={{ gap: 8 }}>
-            {state.settings.blocks.map((b) => (
+            {[...state.settings.blocks]
+              .sort((a, b) => a.start.localeCompare(b.start))
+              .map((b) => (
               <div key={b.id} className="row" style={{ gap: 8 }}>
                 <input type="time" value={b.start} onChange={(e) => updateBlock(b.id, { start: e.target.value })} style={{ width: 104 }} aria-label={`${b.label} start`} />
                 <input type="time" value={b.end} onChange={(e) => updateBlock(b.id, { end: e.target.value })} style={{ width: 104 }} aria-label={`${b.label} end`} />
@@ -89,6 +121,94 @@ export function SettingsPage() {
         </Card>
 
         <div className="col" style={{ gap: 14 }}>
+          <Card>
+            <CardHead
+              title="Active examination plan"
+              sub={planActive ? `${PLAN_TITLE} · activated ${prettyDate(new Date(state.plan!.activatedAt).toISOString().slice(0, 10))}` : 'No plan active'}
+              right={<span className={`badge ${planActive ? 'mastered' : 'not_started'}`}>{planActive ? 'ACTIVE' : 'INACTIVE'}</span>}
+            />
+            <div className="col small" style={{ gap: 4 }}>
+              {[...SUBJECTS].sort((a, b) => a.examDate.localeCompare(b.examDate)).map((s) => (
+                <div key={s.id} className="row between">
+                  <span className="muted">
+                    {s.code} · {s.name}
+                  </span>
+                  <b className="mono">
+                    {prettyDate(s.examDate)} · {s.examStart}
+                  </b>
+                </div>
+              ))}
+              <div className="row between">
+                <span className="muted">Sessions planned</span>
+                <b className="mono">{plan.days.reduce((n, d) => n + d.total, 0)}</b>
+              </div>
+              <div className="row between">
+                <span className="muted">Today</span>
+                <b className="mono">
+                  {plan.today.done}/{plan.today.total} sessions
+                </b>
+              </div>
+            </div>
+            <div className="divider" />
+            <button className="btn primary" onClick={activateExamPlan}>
+              {planActive ? 'Rebuild plan from syllabus' : 'Activate November plan'}
+            </button>
+            <p className="tiny muted" style={{ marginTop: 8 }}>
+              Rebuilding only rewrites the schedule. Topic progress, assessments, mocks, revisions and imported material are kept
+              untouched.
+            </p>
+          </Card>
+
+          <Card>
+            <CardHead title="Reminders" sub="Local notifications, delivered while the app is open" />
+            <div className="col" style={{ gap: 8 }}>
+              <div className="row between small">
+                <span className="muted">Desktop notifications</span>
+                <b className="mono">
+                  {permission === 'unsupported' ? 'unsupported' : permission === 'granted' && state.reminders.desktopEnabled ? 'on' : 'off'}
+                </b>
+              </div>
+              <div className="row" style={{ gap: 8 }}>
+                <button className="btn sm" onClick={() => void enableNotifications()}>
+                  Enable notifications
+                </button>
+                <button
+                  className="btn sm ghost"
+                  onClick={() => {
+                    const reminder = currentReminder(state) ?? {
+                      key: `test:${Date.now()}`,
+                      title: 'EXAMFORGE reminder test',
+                      body: 'Reminders are delivered while the app is open. Keep this tab pinned on study days.',
+                      tone: 'revision' as const,
+                    };
+                    if (!deliver(reminder)) notify('Allow notifications in the browser to see this reminder.');
+                  }}
+                >
+                  Test
+                </button>
+              </div>
+              <Field label="Daily revision reminder">
+                <input
+                  type="time"
+                  value={state.reminders.dailyTime}
+                  onChange={(e) => patchReminders({ dailyTime: e.target.value })}
+                />
+              </Field>
+              <div className="row between small">
+                <span className="muted">Exam warning</span>
+                <b className="mono">{state.reminders.examLeadHours.join(' h / ')} h before</b>
+              </div>
+              <div className="row between small">
+                <span className="muted">Overdue work</span>
+                <b className="mono">{plan.overdue.length + plan.pending.length} sessions</b>
+              </div>
+            </div>
+            <p className="tiny muted" style={{ marginTop: 8 }}>
+              A browser app cannot ring when it is closed. Keep EXAMFORGE installed or pinned: the daily recall reminder, exam
+              countdowns and overdue nudges are checked once a minute while it is open, and each fires once per day.
+            </p>
+          </Card>
+
           <Card>
             <CardHead title="Targets & windows" />
             <div className="grid g2">

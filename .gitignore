@@ -7,3 +7,6 @@ coverage
 .tmp-shots
 .freebuff
 *.tsbuildinfo
+
+# chat artifacts
+/artifacts

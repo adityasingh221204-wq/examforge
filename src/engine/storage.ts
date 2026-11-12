@@ -1,10 +1,11 @@
 // Persistent storage — localStorage-backed AppState with export/import.
 
-import type { AppState, DayBlock, Settings } from '../data/types';
+import type { AppState, DayBlock, ReminderPrefs, Settings } from '../data/types';
+import { PLAN_BLOCKS, PLAN_DAILY_MINUTES } from '../data/plan';
 
 export const STORAGE_KEY = 'examforge.state.v1';
-/** v2 adds `materials` + `materialSources`; older saves are migrated on load. */
-export const STATE_VERSION = 2;
+/** v3 adds the active plan + reminder preferences; older saves are migrated on load. */
+export const STATE_VERSION = 3;
 
 export const DEFAULT_BLOCKS: DayBlock[] = [
   { id: 'b1', start: '08:30', end: '10:30', label: 'Study Block 1', kind: 'study' },
@@ -17,17 +18,26 @@ export const DEFAULT_BLOCKS: DayBlock[] = [
 export const DEFAULT_SETTINGS: Settings = {
   wake: '07:30',
   sleep: '22:30',
-  blocks: DEFAULT_BLOCKS,
-  dailyTargetMin: 480,
+  blocks: PLAN_BLOCKS.map((b) => ({ ...b })),
+  dailyTargetMin: PLAN_DAILY_MINUTES,
   travelStart: '2026-11-04',
   travelEnd: '2026-11-11',
   passPercent: 70,
+};
+
+export const DEFAULT_REMINDERS: ReminderPrefs = {
+  desktopEnabled: false,
+  dailyTime: '19:30',
+  examLeadHours: [24, 3],
+  lastFired: {},
 };
 
 export function defaultState(): AppState {
   return {
     version: STATE_VERSION,
     progress: {},
+    plan: null,
+    reminders: { ...DEFAULT_REMINDERS, lastFired: {} },
     sessions: [],
     timetable: null,
     attempts: [],
@@ -51,8 +61,10 @@ export function loadState(): AppState {
       ...base,
       ...parsed,
       settings: { ...base.settings, ...(parsed.settings ?? {}) },
+      reminders: { ...base.reminders, ...(parsed.reminders ?? {}), lastFired: parsed.reminders?.lastFired ?? {} },
       materials: Array.isArray(parsed.materials) ? parsed.materials : [],
       materialSources: Array.isArray(parsed.materialSources) ? parsed.materialSources : [],
+      plan: parsed.plan ?? null,
       version: STATE_VERSION,
     };
   } catch {
@@ -96,8 +108,10 @@ export function parseImportedState(raw: string): AppState | null {
       ...base,
       ...parsed,
       settings: { ...base.settings, ...(parsed.settings ?? {}) },
+      reminders: { ...base.reminders, ...(parsed.reminders ?? {}), lastFired: parsed.reminders?.lastFired ?? {} },
       materials: Array.isArray(parsed.materials) ? parsed.materials : [],
       materialSources: Array.isArray(parsed.materialSources) ? parsed.materialSources : [],
+      plan: parsed.plan ?? null,
       version: STATE_VERSION,
     };
   } catch {

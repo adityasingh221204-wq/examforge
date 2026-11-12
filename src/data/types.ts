@@ -305,6 +305,9 @@ export interface DayBlock {
   kind: BlockKind;
 }
 
+/** "sprint" is the legacy name for a first-pass learning session. */
+export type SessionKind = 'sprint' | 'revision' | 'mock' | 'practice' | 'routine' | 'exam' | 'admin';
+
 export interface StudySession {
   id: string;
   date: string; // yyyy-mm-dd
@@ -321,16 +324,45 @@ export interface StudySession {
   criteria: string;
   done: boolean;
   missed?: boolean;
-  kind: 'sprint' | 'revision' | 'mock' | 'practice';
+  kind: SessionKind;
   compulsory?: boolean;
+  /** short human title for the session, e.g. `Deep Learning Unit 2 — first 6 topics` */
+  title?: string;
+  /** set when the session belongs to a named plan */
+  planId?: string;
+  /** topics moved into this session after an earlier session was missed */
+  carryOver?: string[];
 }
 
-export type ScheduleMode = 'sprint' | 'examwise';
+export type ScheduleMode = 'sprint' | 'examwise' | 'plan';
 
 export interface Timetable {
   mode: ScheduleMode;
   generatedAt: number;
   sessions: StudySession[];
+  /** id of the plan this timetable was built from, when mode === 'plan' */
+  planId?: string;
+}
+
+/** A named, date-wise examination plan that is currently driving the timetable. */
+export interface ActivePlan {
+  id: string;
+  version?: number;
+  title: string;
+  activatedAt: number;
+  start: string;
+  end: string;
+}
+
+/** Local reminder preferences. A web app can only notify while it is open. */
+export interface ReminderPrefs {
+  desktopEnabled: boolean;
+  /** daily revision reminder, hh:mm local */
+  dailyTime: string;
+  /** hours before an examination to remind */
+  examLeadHours: number[];
+  /** `${kind}:${date}` keys already delivered, so a reminder fires once */
+  lastFired: Record<string, string>;
 }
 
 // ---------------------------------------------------------------- revision (spaced repetition)
@@ -431,6 +463,8 @@ export interface DailyStudyLog {
 export interface AppState {
   version: number;
   progress: Record<string, TopicProgress>;
+  plan: ActivePlan | null;
+  reminders: ReminderPrefs;
   sessions: StudySession[];
   timetable: Timetable | null;
   attempts: Attempt[];

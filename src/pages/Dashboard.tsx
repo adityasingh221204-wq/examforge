@@ -6,6 +6,10 @@ import { SUBJECTS, TOPIC_MAP } from '../data/syllabus';
 import { buildDashboard } from '../engine/analytics';
 import { diffDays, prettyDateShort, todayKey, formatClock } from '../engine/dates';
 import { sessionsForDate, nextSession, examCountdown, isTravelDay } from '../engine/scheduler';
+import { planSummary, toggleSessionDone } from '../engine/plan';
+import { SESSION_KIND_LABEL, SESSION_KIND_TONE } from '../data/labels';
+import { PLAN_ID } from '../data/plan';
+import { currentReminder } from '../engine/reminders';
 import { dueRevisions } from '../engine/revision';
 import { Bar, Card, CardHead, Empty, Ring, Stat } from '../components/ui';
 import { BarSeries, WeekBars } from '../components/charts';
@@ -20,18 +24,17 @@ export function Dashboard() {
   const next = nextSession(state);
   const due = dueRevisions(state);
   const travel = isTravelDay(today, state);
+  const plan = planSummary(state);
+  const planActive = state.plan?.id === PLAN_ID;
+  const reminder = planActive ? currentReminder(state) : null;
+  const studyToday = todaySessions.filter((s) => s.kind !== 'routine' && s.kind !== 'exam');
 
   const upcoming = [...SUBJECTS].sort((a, b) => a.examDate.localeCompare(b.examDate));
   const nextExam = upcoming.find((s) => diffDays(today, s.examDate) >= 0) ?? upcoming[0];
   const daysToExam = diffDays(today, nextExam.examDate);
   const weak = dash.weakest.filter((w) => w.reason !== 'mastered').slice(0, 5);
 
-  const markDone = (id: string) => {
-    set((cur) => ({
-      ...cur,
-      sessions: cur.sessions.map((s) => (s.id === id ? { ...s, done: !s.done } : s)),
-    }));
-  };
+  const markDone = (id: string) => set((cur) => toggleSessionDone(cur, id));
 
   const continueTopic = next?.topicIds[0];
 
@@ -60,6 +63,55 @@ export function Dashboard() {
           </button>
         </div>
       </div>
+
+      {planActive && (
+        <Card style={{ marginBottom: 14 }}>
+          <CardHead
+            title="Active examination plan · 12–26 November 2026"
+            sub={`${plan.today.done}/${plan.today.total} of today's sessions done · ${plan.today.doneMinutes} of ${plan.today.minutes} planned minutes · IST`}
+            right={
+              <div className="row" style={{ gap: 6 }}>
+                <button className="btn sm ghost" onClick={() => navigate('/planner')}>
+                  Open plan
+                </button>
+                <span className="badge mastered">ACTIVE</span>
+              </div>
+            }
+          />
+          <div className="row wrap" style={{ gap: 6, marginBottom: 8 }}>
+            {[...SUBJECTS]
+              .sort((a, b) => a.examDate.localeCompare(b.examDate))
+              .map((s) => {
+                const d = examCountdown(today, s.examDate);
+                return (
+                  <span key={s.id} className={`badge ${d < 0 ? 'not_started' : d <= 1 ? 'needs_revision' : 'lav'}`}>
+                    {s.code} · {d < 0 ? 'written' : d === 0 ? 'exam today' : `${d} days`}
+                  </span>
+                );
+              })}
+            <span className="badge in_progress">
+              mocks {plan.mocksTaken}/{plan.mocksPlanned}
+            </span>
+            {plan.pending.length > 0 && <span className="badge needs_revision">{plan.pending.length} unfinished</span>}
+            {plan.overdue.length > 0 && <span className="badge needs_revision">{plan.overdue.length} overdue</span>}
+          </div>
+          <Bar percent={plan.today.percent} tone="em" />
+          {reminder && (
+            <div className="row" style={{ gap: 8, marginTop: 10 }}>
+              <span className="dot warn" />
+              <span className="small">
+                <b>{reminder.title}</b> — {reminder.body}
+              </span>
+            </div>
+          )}
+          {plan.pending.length > 0 && (
+            <div className="small muted" style={{ marginTop: 8 }}>
+              Unfinished earlier work: {plan.pending.slice(0, 3).map((s) => s.title ?? s.date).join(' · ')} — redistribute it
+              from the planner so tomorrow's paper still gets its time.
+            </div>
+          )}
+        </Card>
+      )}
 
       <div className="grid g4" style={{ marginBottom: 14 }}>
         <Card>
@@ -113,7 +165,11 @@ export function Dashboard() {
         <Card>
           <CardHead
             title="Today's study schedule"
-            sub={travel ? 'Travel period — sessions are optional' : `${todaySessions.length} sessions planned`}
+            sub={
+              travel
+                ? 'Travel period — sessions are optional'
+                : `${studyToday.length} sessions · ${studyToday.filter((s) => s.done).length} done`
+            }
             right={
               <button className="btn sm ghost" onClick={() => navigate('/planner')}>
                 Open planner
@@ -131,21 +187,27 @@ export function Dashboard() {
                       {formatClock(s.start)}–{formatClock(s.end)}
                     </b>
                     <span className="tiny muted">
-                      {SUBJECTS.find((x) => x.id === s.subjectId)?.code} · {s.kind}
+                      {s.kind === 'routine' ? 'routine' : `${SUBJECTS.find((x) => x.id === s.subjectId)?.code} · ${s.kind}`}
                     </span>
                   </div>
                   <span className="small" style={{ color: '#ded8cc' }}>
-                    {s.topicIds.length > 0
-                      ? s.topicIds.map((id) => TOPIC_MAP[id]?.name ?? id).join(' · ')
-                      : s.kind === 'mock'
-                        ? 'Full mock examination'
-                        : 'Revision block'}
+                    {s.title ??
+                      (s.topicIds.length > 0
+                        ? s.topicIds.map((id) => TOPIC_MAP[id]?.name ?? id).join(' · ')
+                        : s.kind === 'mock'
+                          ? 'Full mock examination'
+                          : 'Revision block')}
                   </span>
-                  <span className="tiny muted">{s.objectives.slice(0, 2).join(' · ')}</span>
+                  <span className="tiny muted">
+                    <span className={`badge ${SESSION_KIND_TONE[s.kind]}`}>{SESSION_KIND_LABEL[s.kind]}</span>{' '}
+                    {s.objectives.slice(0, 2).join(' · ')}
+                  </span>
                 </div>
-                <button className={`btn sm ${s.done ? 'extra' : 'ghost'}`} onClick={() => markDone(s.id)}>
-                  {s.done ? 'Done ✓' : 'Mark done'}
-                </button>
+                {s.kind !== 'routine' && s.kind !== 'exam' && (
+                  <button className={`btn sm ${s.done ? 'extra' : 'ghost'}`} onClick={() => markDone(s.id)}>
+                    {s.done ? 'Done ✓' : 'Mark done'}
+                  </button>
+                )}
               </div>
             ))}
           </div>

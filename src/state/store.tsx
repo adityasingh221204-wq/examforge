@@ -14,6 +14,8 @@ import {
 import type { AppState } from '../data/types';
 import { defaultState, loadState, saveState, clearState, downloadFile, exportStateJson } from '../engine/storage';
 import { applySchedule, reorganize } from '../engine/scheduler';
+import { activatePlan, redistributeMissed } from '../engine/plan';
+import { PLAN_ID, PLAN_REVISION } from '../data/plan';
 import { todayKey } from '../engine/dates';
 
 interface StoreApi {
@@ -26,6 +28,8 @@ interface StoreApi {
   exportJson: () => void;
   regenerate: () => void;
   rebalance: () => void;
+  activateExamPlan: () => void;
+  redistribute: () => { moved: number; unplaced: number };
 }
 
 const StoreContext = createContext<StoreApi | null>(null);
@@ -36,13 +40,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seeded = useRef(false);
 
-  // first run: build the sprint timetable so the planner is never empty
+  // first run: the November examination plan is the active timetable.
+  // Progress, materials and completed sessions are preserved — only the future schedule changes.
   useEffect(() => {
     if (seeded.current) return;
     seeded.current = true;
     setState((cur) => {
+      if (cur.plan?.id !== PLAN_ID || cur.plan?.version !== PLAN_REVISION) return activatePlan({ ...cur, seeded: true });
       if (cur.timetable && cur.timetable.sessions.length > 0) return { ...cur, seeded: true };
-      return applySchedule({ ...cur, seeded: true }, 'sprint', todayKey());
+      return activatePlan({ ...cur, seeded: true });
     });
   }, []);
 
@@ -65,8 +71,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const resetAll = useCallback(() => {
     clearState();
     const fresh = defaultState();
-    setState(applySchedule({ ...fresh, seeded: true }, 'sprint', todayKey()));
-    notify('All progress cleared. Timetable regenerated.');
+    setState(activatePlan({ ...fresh, seeded: true }));
+    notify('All progress cleared. The November plan is rebuilt from scratch.');
   }, [notify]);
 
   const exportJson = useCallback(() => {
@@ -76,20 +82,55 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const regenerate = useCallback(() => {
     setState((cur) => {
+      if (cur.plan?.id === PLAN_ID) return activatePlan(cur);
       const mode = cur.timetable?.mode ?? 'sprint';
       return applySchedule(cur, mode, todayKey());
     });
-    notify('Timetable regenerated from current coverage.');
+    notify('Timetable rebuilt from the active plan and current coverage.');
   }, [notify]);
 
   const rebalance = useCallback(() => {
-    setState((cur) => reorganize(cur));
-    notify('Missed sessions rescheduled. Sleep time untouched.');
+    let report = { moved: 0, unplaced: 0 };
+    setState((cur) => {
+      if (cur.plan?.id === PLAN_ID) {
+        const out = redistributeMissed(cur);
+        report = { moved: out.moved.length, unplaced: out.unplaced.length };
+        return out.state;
+      }
+      return reorganize(cur);
+    });
+    queueMicrotask(() => {
+      if (report.moved + report.unplaced > 0) {
+        notify(
+          `Redistributed ${report.moved} topic${report.moved === 1 ? '' : 's'}${
+            report.unplaced > 0 ? ` · ${report.unplaced} could not fit` : ''
+          }. Nothing marked complete.`,
+        );
+      } else {
+        notify('Nothing to redistribute — no unfinished sessions behind you.');
+      }
+    });
   }, [notify]);
 
+  const activateExamPlan = useCallback(() => {
+    setState((cur) => activatePlan(cur));
+    notify('November examination plan activated. Progress and materials kept.');
+  }, [notify]);
+
+  const redistribute = useCallback(() => {
+    const out = redistributeMissed(state);
+    setState(out.state);
+    notify(
+      out.moved.length + out.unplaced.length === 0
+        ? 'Nothing to redistribute.'
+        : `Moved ${out.moved.length} topic(s) forward${out.unplaced.length ? ` · ${out.unplaced.length} unplaced` : ''}.`,
+    );
+    return { moved: out.moved.length, unplaced: out.unplaced.length };
+  }, [state, set, notify]);
+
   const api = useMemo<StoreApi>(
-    () => ({ state, set, replace, notify, resetAll, exportJson, regenerate, rebalance }),
-    [state, set, replace, notify, resetAll, exportJson, regenerate, rebalance],
+    () => ({ state, set, replace, notify, resetAll, exportJson, regenerate, rebalance, activateExamPlan, redistribute }),
+    [state, set, replace, notify, resetAll, exportJson, regenerate, rebalance, activateExamPlan, redistribute],
   );
 
   return (

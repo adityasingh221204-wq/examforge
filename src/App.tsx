@@ -1,6 +1,6 @@
 // EXAMFORGE — application shell: sidebar, top navigation, routes.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { HashRouter, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom';
 import { useStore } from './state/store';
 import { ALL_TOPICS, SUBJECTS, TOPIC_MAP } from './data/syllabus';
@@ -9,6 +9,8 @@ import { studyStreak } from './engine/analytics';
 import { dueRevisions } from './engine/revision';
 import { prettyDate, todayKey } from './engine/dates';
 import { weakestTopics } from './engine/progress';
+import { currentReminder, deliver } from './engine/reminders';
+import { PLAN_ID } from './data/plan';
 import { Dashboard } from './pages/Dashboard';
 import { Subjects } from './pages/Subjects';
 import { Tracker } from './pages/Tracker';
@@ -152,6 +154,32 @@ function TopBar({ onMenu }: { onMenu: () => void }) {
   );
 }
 
+function ReminderWatcher() {
+  const { state, set } = useStore();
+  const latest = useRef(state);
+  latest.current = state;
+
+  useEffect(() => {
+    const tick = () => {
+      const cur = latest.current;
+      if (cur.plan?.id !== PLAN_ID) return;
+      const reminder = currentReminder(cur);
+      if (!reminder) return;
+      if (cur.reminders.lastFired?.[reminder.tone] === reminder.key) return;
+      if (cur.reminders.desktopEnabled) deliver(reminder);
+      set((s) => ({
+        ...s,
+        reminders: { ...s.reminders, lastFired: { ...s.reminders.lastFired, [reminder.tone]: reminder.key } },
+      }));
+    };
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [set]);
+
+  return null;
+}
+
 function Shell() {
   const [navOpen, setNavOpen] = useState(false);
   const { state } = useStore();
@@ -189,6 +217,7 @@ function Shell() {
         </div>
       </aside>
       <div className="main">
+        <ReminderWatcher />
         <TopBar onMenu={() => setNavOpen((v) => !v)} />
         <Routes>
           <Route path="/" element={<Dashboard />} />
