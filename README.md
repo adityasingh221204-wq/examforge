@@ -9,7 +9,7 @@ An examination-preparation system built from four official university syllabi �
 own notes, slides or past papers and they are analysed and filed under the matching syllabus topics.
 
 [![Live app](https://img.shields.io/badge/live-app-8b7cf6?style=for-the-badge)](https://site-4614cef64bc247a99ee04f648244e176.freebuff.page)
-[![Tests](https://img.shields.io/badge/tests-107%20passing-10b981?style=flat-square)](#testing)
+[![Tests](https://img.shields.io/badge/tests-136%20passing-10b981?style=flat-square)](#testing)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6?style=flat-square)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-61dafb?style=flat-square)](https://react.dev/)
 [![Vite 8](https://img.shields.io/badge/Vite-8-646cff?style=flat-square)](https://vite.dev/)
@@ -42,6 +42,7 @@ content, question bank and evaluation engines are all deterministic code and aut
 | **Syllabus audit** | Every topic from the four official documents, verbatim, with subtopics preserved. Six states, tracked per topic, with a live completeness report. |
 | **Five-level teaching** | Every topic teaches zero-level intuition → technical detail → visual model → practical application → exam readiness. No level can be skipped or empty. |
 | **Question bank** | 688 questions (3/4/5 marks, difficulty 1–5) each with expected answer structure, model answer, explanation, common mistakes and a mark-wise rubric. |
+| **Deep Learning Answer Master** | The uploaded 239-question DL bank (234 numbered + 5 standalone numericals) answered in exam format — computed numerical walkthroughs, topic-grounded theory answers, per-question status, verification checklist, unit progress and an "ask any question" solver. |
 | **Numerical lab** | 27 solvers across DL, CN, NLP and Cloud. Given → required → formula → why → substitution → steps → answer → mistakes, with re-solving practice mode. |
 | **Answer evaluator** | Scores typed answers against the rubric, names the missed marks and checks length and structure. Incomplete answers cannot receive full marks. |
 | **Active examination plan** | A real date-wise plan for 12–26 November 2026: 15 days, 61 sessions, four papers, one first pass of every topic before its exam, daily recall, practice and a mock per paper. Activation keeps all progress; missed work is redistributed into later capacity, never past the paper and never in place of sleep. Sprint and exam-wise modes remain available. |
@@ -57,6 +58,10 @@ content, question bank and evaluation engines are all deterministic code and aut
 | Active plan — dashboard | Active plan — planner and exam mornings |
 | --- | --- |
 | ![Dashboard](docs/assets/plan-dashboard.png) | ![Planner](docs/assets/plan-planner.png) |
+
+| Deep Learning Answer Master | Answer with a verification checklist |
+| --- | --- |
+| ![Answer Master bank](docs/assets/answer-master-bank.png) | ![Answer with verification](docs/assets/answer-master.png) |
 
 | Syllabus tracker (all 172 topics) | Learn — five levels per topic |
 | --- | --- |
@@ -120,7 +125,7 @@ No environment variables, API keys or services are required.
 | `npm run build` | Type-check and build to `dist/` |
 | `npm run preview` | Serve the production build |
 | `npx tsc --noEmit` | Type-check only |
-| `npx vitest run` | Run the 107-test suite |
+| `npx vitest run` | Run the 136-test suite |
 
 ## Data in the repository
 
@@ -133,7 +138,7 @@ No environment variables, API keys or services are required.
 | Questions with rubrics | 688 |
 | Numerical solvers | 27 |
 | Hand-authored diagrams | 54 (+118 derived component flows) |
-| Automated tests | 107 |
+| Automated tests | 136 |
 
 The syllabus is the source of truth. Topic names are never rewritten, merged or invented, and a build-time
 audit (`MISSING_CONTENT`, `ORPHAN_CONTENT`) fails the test suite if the data ever drifts out of sync.
@@ -146,7 +151,7 @@ src/
   engine/    dates, storage, progress, scheduler, revision, scoring, analytics — pure TypeScript
              ingest (material analysis), extract (PDF/text reading)
   state/     single React context store, auto-persisted
-  pages/     14 pages
+  pages/     15 pages
   components/ ui primitives, SVG charts, diagram renderer, question view
 tests/       engine/data QA suite + page render suite
 worker.js    Cloudflare Worker entrypoint serving the built SPA
@@ -165,13 +170,13 @@ Full detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 npx vitest run
 ```
 
-107 tests covering syllabus integrity, content completeness (all five levels present for all 172
+136 tests covering syllabus integrity, content completeness (all five levels present for all 172
 topics), bank invariants (rubrics sum to marks, MCQ options unique), numerical determinism, planner
 constraints (no sessions on travel days or exam mornings, sleep never violated, sessions inside study
 blocks), mastery gating, spaced-repetition behaviour, evaluator fairness, material ingest (sectioning,
 classification, topic matching, subject detection, de-duplication, state migration), the active
 November plan (one first pass per topic before its paper, protected exam mornings, activation that preserves
-progress, redistribution, reminders) and a render smoke test for all fourteen pages. See [docs/QA.md](docs/QA.md).
+progress, redistribution, reminders) and a render smoke test for all fifteen pages. See [docs/QA.md](docs/QA.md).
 
 ## Deployment
 

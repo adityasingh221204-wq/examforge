@@ -11,6 +11,7 @@ import { Tracker } from '../src/pages/Tracker';
 import { Planner } from '../src/pages/Planner';
 import { Learn } from '../src/pages/Learn';
 import { Book } from '../src/pages/Book';
+import { AnswerMaster } from '../src/pages/AnswerMaster';
 import { Bank } from '../src/pages/Bank';
 import { Lab } from '../src/pages/Lab';
 import { Practice } from '../src/pages/Practice';
@@ -55,6 +56,7 @@ const pages: [string, ReactElement, string][] = [
   ['Study Planner', <Planner />, '/planner'],
   ['Learn', <Learn />, '/learn'],
   ['Study Book', <Book />, '/book'],
+  ['Answer Master', <AnswerMaster />, '/answers'],
   ['Question Bank', <Bank />, '/bank'],
   ['Numerical Lab', <Lab />, '/lab'],
   ['Practice Tests', <Practice />, '/practice'],
@@ -99,6 +101,14 @@ describe('page rendering', () => {
     expect(html).toContain('1.1');
     expect(html).toContain('Contents');
     expect(html).toContain('Print / save as PDF');
+  });
+
+  it('renders the Answer Master bank with original numbering and a computed numerical answer', () => {
+    const html = render(<AnswerMaster />, '/answers');
+    expect(html).toContain('Deep Learning Answer Master');
+    expect(html).toContain('239');
+    expect(html).toContain('Generate all answers');
+    expect(html).toContain('Numerical Problem 1');
   });
 
   it('renders the audit table row count for the tracker', () => {

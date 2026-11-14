@@ -1,6 +1,8 @@
 // EXAMFORGE — core type system
 // All data shapes for syllabus, teaching content, questions, progress, scheduling.
 
+import type { AnswerProgress } from './answerMaster/types';
+
 export type SubjectId = 'dl' | 'cn' | 'nlp' | 'cloud';
 
 export type TopicStatus =
@@ -471,6 +473,8 @@ export interface AppState {
   mocks: MockResult[];
   revisions: RevisionItem[];
   studyLog: DailyStudyLog[];
+  /** Answer Master progress, keyed by imported question id (never the answer text) */
+  answers: Record<string, AnswerProgress>;
   /** imported study material, already filed under syllabus topics */
   materials: MaterialAttachment[];
   materialSources: MaterialSource[];

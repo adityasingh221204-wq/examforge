@@ -4,8 +4,8 @@ import type { AppState, DayBlock, ReminderPrefs, Settings } from '../data/types'
 import { PLAN_BLOCKS, PLAN_DAILY_MINUTES } from '../data/plan';
 
 export const STORAGE_KEY = 'examforge.state.v1';
-/** v3 adds the active plan + reminder preferences; older saves are migrated on load. */
-export const STATE_VERSION = 3;
+/** v4 adds Answer Master progress; older saves are migrated on load. */
+export const STATE_VERSION = 4;
 
 export const DEFAULT_BLOCKS: DayBlock[] = [
   { id: 'b1', start: '08:30', end: '10:30', label: 'Study Block 1', kind: 'study' },
@@ -38,6 +38,7 @@ export function defaultState(): AppState {
     progress: {},
     plan: null,
     reminders: { ...DEFAULT_REMINDERS, lastFired: {} },
+    answers: {},
     sessions: [],
     timetable: null,
     attempts: [],
@@ -65,6 +66,7 @@ export function loadState(): AppState {
       materials: Array.isArray(parsed.materials) ? parsed.materials : [],
       materialSources: Array.isArray(parsed.materialSources) ? parsed.materialSources : [],
       plan: parsed.plan ?? null,
+      answers: parsed.answers && typeof parsed.answers === 'object' ? parsed.answers : {},
       version: STATE_VERSION,
     };
   } catch {
@@ -112,6 +114,7 @@ export function parseImportedState(raw: string): AppState | null {
       materials: Array.isArray(parsed.materials) ? parsed.materials : [],
       materialSources: Array.isArray(parsed.materialSources) ? parsed.materialSources : [],
       plan: parsed.plan ?? null,
+      answers: parsed.answers && typeof parsed.answers === 'object' ? parsed.answers : {},
       version: STATE_VERSION,
     };
   } catch {

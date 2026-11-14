@@ -7,7 +7,7 @@ as such rather than implied to be tested.
 
 ```bash
 npx tsc --noEmit     # type-check, strict mode            → clean
-npx vitest run       # 107 tests in 5 files                → 107 passed
+npx vitest run       # 136 tests in 6 files                → 136 passed
 npm run build        # tsc + vite build                    → dist/ produced
 ```
 
@@ -85,6 +85,22 @@ review, lab logistics correctly unmatched → confirm → `localStorage` held 5 
 Learn page for `dl-u2-t5` rendered the Backpropagation block with its summary and 87% match, and topic
 status counters were unchanged.
 
+## Deep Learning Answer Master (`tests/answerMaster.test.ts`, 27 tests)
+
+| Area | Assertion |
+|---|---|
+| Import | 239 questions parse; the five head problems are `N1`–`N5`; numbered questions 1–234 are present exactly once, in document order |
+| Fidelity | Question text is not rewritten; the first and last questions match the document; unit assignment covers all five units |
+| Type detection | Comparison, derivation/proof, diagram and application wording route to their formats; marks are suggested from wording |
+| Numerical answers | N1 z = −0.8 → 0; N2 weights [0.3, −0.2] and b = 0.2; Q69 σ(−2) = 0.1192; Q73 softmax [0.6652, 0.2447, 0.0900]; Q84 MSE 0.08; Q94 ∂L/∂w = −0.2115; Q95 ∂L/∂w2 = −4.5; Q109 −0.5781; Q136 final 3.6893; Q219 0.7063 — each asserted against the section text |
+| Numerical format | The five mandatory headings appear in order for every solved numerical |
+| Missing data | Q110, Q161, Q220, Q221, Q228 list the exact missing values and never invent a result; Q225 gives the method plus a labelled illustrative run |
+| Theory answers | Structured exam sections, a glossary, a diagram, and depth that follows the marks |
+| Free-form solver | New theory question matches the right topic; a pasted perceptron and MSE are computed from the question's own numbers; an unmatched question is labelled as outside the syllabus |
+| Status model | Generate marks `generated`, never `checked`; a failed check keeps the answer out of `checked`; revision and favourites are independent flags |
+| Progress | Unit, type and marks progress is derived from stored statuses |
+| Migration | A v3 save without `answers` loads as v4 with defaults and intact progress |
+
 ## Not verified
 
 - **Exam interactive flows in an automated browser.** Timer countdown, autosave-on-reload, submit
@@ -95,6 +111,9 @@ status counters were unchanged.
   pipeline, not the browser PDF parser.
 - **Real exam-device behaviour.** Screen-lock, app switching and low-power modes on a phone are untested.
 - **Print/PDF export.** Not implemented; export is JSON.
+- **Answer Master click-through.** The bank list, filters, answer rendering, generate-all, mark-checked,
+  the ask-any-question tab and its topic matching were exercised in the Cloud browser during development;
+  they are not part of the automated suite, which covers the engine and a render smoke test.
 - **Accessibility audit.** Semantic landmarks, labels and focus states exist; no screen-reader pass or
   automated a11y scan has been run.
 - **Cross-browser.** Verified in Chromium only.

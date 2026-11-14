@@ -69,7 +69,7 @@ src/
     ingest.ts         material analysis: sectioning, matching, de-duplication
     extract.ts        browser file reading (pdf.js, text, HTML, JSON)
   state/store.tsx     React context store: one AppState, auto-persisted
-  pages/              14 pages (Dashboard, Add Material … Settings)
+  pages/              15 pages (Dashboard, Add Material … Answer Master, Settings)
   components/         ui primitives, SVG charts, diagram renderer, QuestionView
   styles.css          neumorphic design system
 tests/
@@ -239,7 +239,7 @@ imminent one; `missedCount()` drives the reschedule banner.
 
 ---
 
-## 8. The fourteen pages
+## 8. The fifteen pages
 
 **1. Dashboard** — exam countdowns, overall coverage vs mastery, today's schedule with complete/skip,
 today's learning objectives drawn from the scheduled topics, the revision queue snapshot, subject
@@ -302,6 +302,18 @@ estimated reading time, offers a chapter range and a table of contents, remember
 stopped at, saves the whole subject as one self-contained `.html` file (opens with no signal on any phone) and prints to a clean black-on-white PDF. This is the page for a train with no signal: the
 app registers a service worker, so once it has been opened online the book — and every other page —
 opens from cache. The badge in the header says **Available offline** once the cache is in place.
+
+**15. Deep Learning Answer Master** — the uploaded 239-question DL bank (234 numbered + 5 standalone
+numericals) in original order, unit-wise, with search and filters by type, unit, marks and status.
+Every question opens a full examination answer: numerical questions use GIVEN → TO FIND → FORMULA USED
+→ SOLUTION → CONCLUSION with computed steps and checks; theory, comparison, application, diagram and
+long questions use the matching structure from the uploaded material. Depth follows the marks (2 marks
+short, 5 structured, 8–10 full) and can be overridden. Status is separate from verification: an answer
+is `GENERATED` until every checklist item passes and you mark it `CHECKED`; `REVISED`, important,
+difficult and favourite are explicit flags. The second tab, **Ask any Deep Learning Question**, answers
+a pasted question, a `.txt`/`.md` upload or a bank question, with follow-ups (simpler, longer, another
+example) and an explicit list of missing values when a numerical is under-specified. Progress by unit,
+type and marks is computed from the stored statuses. See [ANSWERS.md](ANSWERS.md).
 
 ### Adding your own material (page 13)
 
@@ -465,7 +477,7 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 ## 16. Verification record
 
 - `tsc --noEmit` clean.
-- **107/107 tests passing**: syllabus integrity (20 units, 172 unique topics, the exact 8/13/9/13/5,
+- **136/136 tests passing**: syllabus integrity (20 units, 172 unique topics, the exact 8/13/9/13/5,
   7/9/9/12/10, 15/12/9/5/7 and 8/8/6/3/4 per-unit distribution), all 172 content records
   with five non-empty levels, zero missing/orphan content, four questions per topic with rubrics
   summing to marks and unique MCQ options, 27 numericals solving deterministically, planner rules
@@ -476,7 +488,10 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
   migration), the November plan (15 days, one first pass per topic before its paper, protected exam
   mornings, no new material in the night-before block, activation preserving progress and completion,
   idempotent rebuilds, redistribution that never completes or overruns a paper, reminder timing), and
-  a render smoke test for all 14 pages.
+  the Deep Learning Answer Master (239 parsed questions, numbering and order preserved, numerical
+  values checked by computation, marks-based depth, missing-input disclosure, free-form solving for
+  new theory and numerical questions, status/check separation, v3→v4 migration), and a render smoke
+  test for all 15 pages.
 - Production build succeeds; deployed HTML, JS and CSS verified over HTTP with correct content types,
   and unknown paths fall back to the app shell.
 
@@ -501,6 +516,12 @@ the same `dist/` works on Vercel, Netlify, GitHub Pages, S3 or any static host.
 - **Reminders are local only.** The app can raise a browser notification for the daily recall block, an
   exam inside the 24 h / 3 h window, and overdue work — but only while EXAMFORGE is open. There is no
   server and no push subscription, so it cannot ring when the browser is closed.
+- **Answer Master answers are authored, not model-generated.** Every answer is composed locally from
+  the repository's syllabus content and computed numerical solutions. Free-form numerical support
+  covers the bank's problems plus a small set of recognisers (activation, softmax, MSE, perceptron,
+  parameter counts); other wording returns the full method and the exact missing inputs instead of a
+  guessed number. Free-form topic matching is lexical and says which topic it used. PDF question
+  upload is not supported in that box.
 - **No browser-based UI test.** Pages are verified by server-rendering and by HTTP against the deployed
   build; interactive behaviour (typing, timer countdown) has not been driven by an automated browser.
 

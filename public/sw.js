@@ -3,7 +3,7 @@
 // Book opens on a train with no signal. All subject content lives inside the JS bundle,
 // so caching these few files is enough to make every page work offline.
 
-const CACHE = 'examforge-v2';
+const CACHE = 'examforge-v3';
 const SHELL = new URL('./', self.location).href;
 
 /** Read the built HTML and precache every same-origin asset it references. */

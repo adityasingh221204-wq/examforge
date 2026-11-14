@@ -32,6 +32,11 @@ src/
 │   │   ├── base.ts       c() builder: fills optional fields, guarantees a Level-3 visual
 │   │   ├── dl.ts cn.ts nlp.ts cloud.ts   172 teaching records
 │   │   └── index.ts      CONTENT, MISSING_CONTENT, ORPHAN_CONTENT, CONTENT_STATS
+│   ├── answerMaster/
+│   │   ├── source.ts     the 239-question bank, verbatim
+│   │   ├── parse.ts      parser: numbering, format, marks, difficulty, unit
+│   │   ├── meta1–4.ts    curated topic + focus per question
+│   │   └── numericals.ts computed numerical solutions with checks
 │   └── bank/
 │       ├── questions.ts  688 questions derived from content, with rubrics
 │       ├── numericals.ts 27 solver specs
@@ -48,12 +53,14 @@ src/
 │   ├── scoring.ts        objective grading, rubric evaluator, mock assembly
 │   ├── analytics.ts      streaks, accuracy series, heatmap, mock reports
 │   ├── book.ts           study-book assembly: chapters, sections, word counts, reading time
+│   ├── answerMaster.ts   answer composition, marks-based depth, missing-data handling,
+│   │                     free-form topic matching and numerical recognisers
 │   ├── ingest.ts         material analysis: sectioning, classification, topic matching,
 │   │                     summarising, de-duplication, commit/remove helpers
 │   └── extract.ts        browser file reading: pdf.js text layer, text/HTML/JSON, limits
 ├── state/store.tsx       StoreProvider / useStore — one AppState, persisted
-├── pages/                Dashboard, Ingest, Subjects, Tracker, Planner, Learn, Book, Bank, Lab,
-│                         Practice, Mocks, Revision, Analytics, Settings
+├── pages/                Dashboard, Ingest, Subjects, Tracker, Planner, Learn, Book, AnswerMaster,
+│                         Bank, Lab, Practice, Mocks, Revision, Analytics, Settings
 ├── public/               sw.js (offline shell), manifest.webmanifest, icons
 ├── components/           ui.tsx, charts.tsx, diagram.tsx, QuestionView.tsx
 ├── styles.css            design system
@@ -193,7 +200,7 @@ recomputed from a stored `MockResult.perQuestion` so old reports stay accurate.
 
 ## Rendering
 
-- `App.tsx` owns the shell: 12-item sidebar, topbar with global topic search, due-revision badge and
+- `App.tsx` owns the shell: 13-item sidebar, topbar with global topic search, due-revision badge and
   countdown; routes render the pages.
 - Charts are plain SVG components (`components/charts.tsx`); diagrams render `DiagramSpec` variants
   (`flow`, `arch`, `sequence`, `compare`) in `components/diagram.tsx`.

@@ -17,6 +17,7 @@ import { Tracker } from './pages/Tracker';
 import { Planner } from './pages/Planner';
 import { Learn } from './pages/Learn';
 import { Book } from './pages/Book';
+import { AnswerMaster } from './pages/AnswerMaster';
 import { Bank } from './pages/Bank';
 import { Lab } from './pages/Lab';
 import { Practice } from './pages/Practice';
@@ -34,6 +35,7 @@ const NAV = [
   { to: '/planner', label: 'Study Planner', ico: '▦' },
   { to: '/learn', label: 'Learn', ico: '◐' },
   { to: '/book', label: 'Study Book', ico: '❏' },
+  { to: '/answers', label: 'Answer Master', ico: '✎' },
   { to: '/bank', label: 'Question Bank', ico: '?' },
   { to: '/lab', label: 'Numerical Lab', ico: '∑' },
   { to: '/practice', label: 'Practice Tests', ico: '◍' },
@@ -228,6 +230,7 @@ function Shell() {
           <Route path="/planner" element={<Planner />} />
           <Route path="/learn" element={<Learn />} />
           <Route path="/book" element={<Book />} />
+          <Route path="/answers" element={<AnswerMaster />} />
           <Route path="/bank" element={<Bank />} />
           <Route path="/lab" element={<Lab />} />
           <Route path="/practice" element={<Practice />} />
