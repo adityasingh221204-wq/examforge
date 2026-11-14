@@ -145,7 +145,7 @@ export function AnswerMaster() {
     });
 
   return (
-    <main className="page">
+    <main className="page answers-page">
       <div className="page-head">
         <div className="col">
           <h1>Deep Learning Answer Master</h1>
@@ -482,7 +482,7 @@ export function AnswerMaster() {
 
             <Card>
               <CardHead title="How this module answers" />
-              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#cfc9bf' }}>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.6, color: '#e6e0d5' }}>
                 <li>Every question keeps its original number and wording from the uploaded document.</li>
                 <li>Theory answers are assembled from the authored five-level content of the matched syllabus topic.</li>
                 <li>Numerical answers are computed in code, step by step, with a verification checklist.</li>
@@ -542,9 +542,9 @@ function AnswerView({
 function SectionBody({ section: s }: { section: AnswerSection }) {
   return (
     <div className="col" style={{ gap: 6, marginTop: 6 }}>
-      {s.body && <p className="small" style={{ margin: 0, color: '#ded8cc' }}>{s.body}</p>}
+      {s.body && <p className="small" style={{ margin: 0, color: '#ece6db', lineHeight: 1.65 }}>{s.body}</p>}
       {s.bullets?.length ? (
-        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#ded8cc' }}>
+        <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.6, color: '#e6e0d5' }}>
           {s.bullets.map((b) => (
             <li key={b}>{b}</li>
           ))}
@@ -561,7 +561,7 @@ function SectionBody({ section: s }: { section: AnswerSection }) {
       {s.diagram && (
         <pre
           className="mono tiny"
-          style={{ margin: 0, padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 8, whiteSpace: 'pre-wrap', color: '#cfc9bf' }}
+          style={{ margin: 0, padding: 10, background: 'rgba(0,0,0,0.25)', borderRadius: 8, whiteSpace: 'pre-wrap', color: '#d8d2c6' }}
         >
           {s.diagram}
         </pre>
@@ -812,7 +812,7 @@ function AskAnyQuestion({ onCopy }: { onCopy: () => void }) {
       <div className="col" style={{ gap: 14 }}>
         <Card>
           <CardHead title="What the solver does" />
-          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12.5, color: '#cfc9bf' }}>
+          <ul style={{ margin: 0, paddingLeft: 18, fontSize: 14, lineHeight: 1.6, color: '#e6e0d5' }}>
             <li>Classifies the question: numerical, theory, comparison, application, derivation or diagram.</li>
             <li>Finds the closest of the 48 Deep Learning syllabus topics by term overlap.</li>
             <li>Suggests a marks-based depth, then builds the matching answer format.</li>
